@@ -1,12 +1,40 @@
 import { Button } from '../atoms/Button';
+import { useState, useContext, useEffect} from 'react';
+import { TimeContext } from '../../App'; 
 
-export const TimerState = () => {
+type TimerStateProps = {
+  minute: number;
+  second: number;
+}
+
+export const TimerState = (props:TimerStateProps) => {
+  const { minute, second } = props;
+  const [isRunning, setIsRunning] = useState(false);
+  const { setTotalSeconds } = useContext(TimeContext);
+  let timer:ReturnType<typeof setTimeout> 
+
   const onClickStart = () => {
     console.log('start');
+    setTotalSeconds(minute * 60 + second);
+    // falseの場合trueにする
+    setIsRunning(isRunning || true);  
   };
   const onClickStop = () => {
     console.log('stop');
+    // trueの場合falseにする !isRunningでもいいが練習のため
+    setIsRunning(isRunning && false);
   };
+
+  useEffect(() => {
+    if (isRunning) {
+      timer = setInterval(() => {
+        setTotalSeconds((prev: number) => prev - 1);
+      }, 1000);
+    } else {
+      clearInterval(timer);
+    }
+    return () => clearInterval(timer);
+  }, [isRunning, setTotalSeconds]);
 
   return (
     <>

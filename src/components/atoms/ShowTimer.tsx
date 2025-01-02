@@ -3,7 +3,9 @@ import { TimeContext }  from '../../App'
   
 export const ShowTimer = () => {
     
-    const {minute, second} = useContext(TimeContext)
+    const {totalSeconds} = useContext(TimeContext)
+    const minute = Math.floor(totalSeconds / 60);
+    const second = totalSeconds % 60;
     const sumTime = minute * 60 + second;
 
 
