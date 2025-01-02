@@ -13,9 +13,11 @@ export const TimeSelect = (props : TimerSelectProps) => {
     const SECONDS = Array.from({length: 60}, (_, i) => i );
   return (
     <>
+        
         <div>
+            { /* TODO: flexで丁寧に修正する*/}
             <TimePullDown selectNumbers={MINUTES} setTimer={setMinute}/>
-            ：
+             : 
             <TimePullDown selectNumbers={SECONDS} setTimer={setSecond}/>
 
         </div>

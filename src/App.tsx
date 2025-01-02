@@ -1,11 +1,11 @@
-import { useState, createContext } from 'react';
+import { useState, createContext , useCallback} from 'react';
 
 import './App.css';
 import { TimerState } from './components/molecules/TimerState';
 import { TimeSelect } from './components/molecules/TimeSelect';
 import { ShowTimer } from './components/atoms/ShowTimer';
 
-const TimeContext = createContext(
+export const TimeContext = createContext(
   {
     minute : 0,
     second: 0,
