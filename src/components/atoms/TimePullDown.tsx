@@ -1,12 +1,17 @@
+type PullDown = {
+    selectNumbers : Array<number>;
+}
 
 
-export const TimePullDown = () => {
+export const TimePullDown = (props : PullDown) => {
+
+    const { selectNumbers } = props
     return (
         <>
             <select name="example">
-                <option>00</option>
-                <option>01</option>
-                <option>02</option>
+                {selectNumbers.map((number : number) => {
+                   return <option key={number}>{number}</option>
+                })}
             </select>
         </>
     )
