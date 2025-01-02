@@ -10,7 +10,7 @@ type TimerStateProps = {
 export const TimerState = (props:TimerStateProps) => {
   const { minute, second } = props;
   const [isRunning, setIsRunning] = useState(false);
-  const { setTotalSeconds } = useContext(TimeContext);
+  const { totalSeconds, setTotalSeconds } = useContext(TimeContext);
   let timer:ReturnType<typeof setTimeout> 
 
   const onClickStart = () => {
@@ -28,12 +28,18 @@ export const TimerState = (props:TimerStateProps) => {
   useEffect(() => {
     if (isRunning) {
       timer = setInterval(() => {
+        if(totalSeconds < 0) {
+          setIsRunning(isRunning && false);
+        }
         setTotalSeconds((prev: number) => prev - 1);
       }, 1000);
     } else {
       clearInterval(timer);
     }
-    return () => clearInterval(timer);
+    return () => {
+      console.log("クリーンアップ");
+      clearInterval(timer);
+    }
   }, [isRunning, setTotalSeconds]);
 
   return (
