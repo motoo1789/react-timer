@@ -1,4 +1,4 @@
-import { useState, createContext, useCallback } from "react";
+import { useState, createContext } from "react";
 
 import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
