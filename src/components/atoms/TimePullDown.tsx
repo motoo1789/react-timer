@@ -6,13 +6,9 @@ type PullDown = {
 };
 
 export const TimePullDown = memo((props: PullDown) => {
-  console.log("TimePullDown render!!");
-
   const { selectNumbers, setTimer } = props;
-
   const onChangeTimer = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedNumber = Number(event.target.value);
-    console.log(selectedNumber);
     setTimer(selectedNumber);
   };
 
