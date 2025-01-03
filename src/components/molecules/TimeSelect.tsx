@@ -13,7 +13,7 @@ export const TimeSelect = (props: TimerSelectProps) => {
   const SECONDS = Array.from({ length: 60 }, (_, i) => i);
   return (
     <>
-      <div>
+      <div className="flex">
         {/* TODO: flexで丁寧に修正する*/}
         <TimePullDown selectNumbers={MINUTES} setTimer={setMinute} />
         <span style={{ margin: "0 10px" }}>:</span>
