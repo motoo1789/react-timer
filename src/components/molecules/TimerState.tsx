@@ -55,7 +55,7 @@ export const TimerState = (props: TimerStateProps) => {
 
   return (
     <>
-      <div>
+      <div className="flex">
         <Button content={"start"} changeState={onClickStart} />
         <Button content={"stop"} changeState={onClickPause} />
         <Button content={"reset"} changeState={onClickReset} />
