@@ -20,7 +20,7 @@ export const ShowTimer = (props : ShowTimerProps) => {
       <>
         <div className="flex justify-center items-center">
           <p>{`合計の秒数：${sumTime}`}</p>
-          <p style={showColor} className="text-9xl">{`${minute} : ${second}`}</p>
+          <p style={showColor} className="text-9xl">{minute < 10 ? `0${minute}` : minute} : {second < 10 ? `0${second}` : second}</p>
         </div>
       </>
     );
