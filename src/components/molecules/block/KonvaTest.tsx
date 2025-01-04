@@ -1,8 +1,18 @@
 import React, { useState } from "react";
+import Konva from 'konva'; 
 import { Stage, Layer, Rect, Text, Group } from "react-konva";
 
+type Block = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill: string;
+  id: number;
+};
+
 export const KonvaTest = () => {
-  const [blocks, setBlocks] = useState([]);
+  const [blocks, setBlocks] = useState<Block[]>([]);
 
   // ブロックを追加
   const addBlock = () => {
@@ -20,7 +30,7 @@ export const KonvaTest = () => {
   };
 
   // ドラッグ後の位置を更新
-  const handleDragEnd = (e, id) => {
+  const handleDragEnd = (e : Konva.KonvaEventObject<DragEvent>, id : number) => {
     const { x, y } = e.target.position();
     setBlocks((prevBlocks) =>
       prevBlocks.map((block) =>
@@ -30,7 +40,7 @@ export const KonvaTest = () => {
   };
 
   // ボタンのクリックイベント
-  const handleButtonClick = (id : string) => {
+  const handleButtonClick = (id : number) => {
     alert(`Button in block ${id} clicked!`);
   };
 

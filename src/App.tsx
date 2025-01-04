@@ -4,6 +4,7 @@ import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
 import { TimeSelect } from "./components/molecules/TimeSelect";
 import { ShowTimer } from "./components/atoms/ShowTimer";
+import { KonvaTest } from "./components/molecules/block/KonvaTest";
 
 type TimeContextType = {
   totalSeconds: number;
@@ -23,6 +24,7 @@ function App() {
 
   return (
     <>
+      <div>
       <TimeContext.Provider value={{ totalSeconds, setTotalSeconds }}>
         <ShowTimer color={showTimerColor} />
         <TimeSelect setMinute={setMinute} setSecond={setSecond} />
@@ -32,6 +34,10 @@ function App() {
           setShowTimerColor={setShowTimerColor}
         />
       </TimeContext.Provider>
+      </div>
+      <div>
+        <KonvaTest />
+      </div>
     </>
   );
 }
