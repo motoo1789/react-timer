@@ -33,13 +33,24 @@ export function useInteractJS(
   const enable = () => {
     interact((interactRef.current as unknown) as HTMLElement)
       .draggable({
-        inertia: false
+        inertia: false,
+        modifiers: [
+            interact.modifiers.restrict({
+              restriction: 'parent', // 親要素内に制限
+              endOnly: true
+            })
+          ],
       })
       .resizable({
         // resize from all edges and corners
         edges: { left: true, right: true, bottom: true, top: true },
         preserveAspectRatio: false,
-        inertia: false
+        inertia: false,
+        modifiers: [
+            interact.modifiers.restrictEdges({
+              outer: 'parent' // 親要素内に制限
+            })
+          ],
       })
       .on('dragmove', event => {
         x += event.dx

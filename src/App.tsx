@@ -37,14 +37,15 @@ function App() {
       </TimeContext.Provider>
       <button onClick={() => interact.enable()}>有効化</button>
       <button onClick={() => interact.disable()}>無効化</button>
-      <div
-        ref={interact.ref}
-        style={{
-          ...interact.style,           // <= 追加する
-          border: '2px solid #0489B1',
-          backgroundColor: '#A9D0F5'
-        }}>
-
+      <div style={{ width: '900px', height: '900px', backgroundColor: '#FFFDD0', position: 'relative' }}>
+        <div
+          ref={interact.ref}
+          style={{
+            ...interact.style,           // <= 追加する
+            border: '2px solid #0489B1',
+            backgroundColor: '#A9D0F5'
+          }}>
+        </div>
       </div>
     </>
   );
