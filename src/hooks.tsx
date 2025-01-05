@@ -35,9 +35,9 @@ export function useInteractJS(
       .draggable({
         inertia: false,
         modifiers: [
-            interact.modifiers.restrict({
+            interact.modifiers.restrictRect({
               restriction: 'parent', // 親要素内に制限
-              endOnly: true
+              // endOnly: true
             })
           ],
       })
