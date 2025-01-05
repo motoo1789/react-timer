@@ -1,4 +1,5 @@
 import { useState, createContext } from "react";
+import { useInteractJS } from './hooks'
 
 import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
@@ -21,6 +22,8 @@ function App() {
   const [showTimerColor, setShowTimerColor] = useState("black");
   const [totalSeconds, setTotalSeconds] = useState(0);
 
+  const interact = useInteractJS()
+
   return (
     <>
       <TimeContext.Provider value={{ totalSeconds, setTotalSeconds }}>
@@ -32,6 +35,17 @@ function App() {
           setShowTimerColor={setShowTimerColor}
         />
       </TimeContext.Provider>
+      <button onClick={() => interact.enable()}>有効化</button>
+      <button onClick={() => interact.disable()}>無効化</button>
+      <div
+        ref={interact.ref}
+        style={{
+          ...interact.style,           // <= 追加する
+          border: '2px solid #0489B1',
+          backgroundColor: '#A9D0F5'
+        }}>
+
+      </div>
     </>
   );
 }
