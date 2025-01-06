@@ -1,5 +1,4 @@
 import { useState, createContext } from "react";
-import { useInteractJS } from './hooks'
 
 import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
@@ -28,8 +27,8 @@ function App() {
   const [blocks, setBlocks] = useState([<InteractBlock key={0} />]);
 
   const addBlock = () => {
-    setBlocks([...blocks, <InteractBlock key={blocks.length} />]);  
-  }
+    setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
+  };
 
   return (
     <>
@@ -42,12 +41,19 @@ function App() {
           setShowTimerColor={setShowTimerColor}
         />
       </TimeContext.Provider>
-    {/*}
+      {/*}
       <button onClick={() => interact.enable()}>有効化</button>
       <button onClick={() => interact.disable()}>無効化</button>
     */}
       <button onClick={addBlock}>ブロックを追加</button>
-      <div style={{ width: '900px', height: '900px', backgroundColor: '#FFFDD0', position: 'relative' }}>
+      <div
+        style={{
+          width: "900px",
+          height: "900px",
+          backgroundColor: "#FFFDD0",
+          position: "relative",
+        }}
+      >
         {blocks}
       </div>
     </>

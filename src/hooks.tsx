@@ -26,6 +26,7 @@ export function useInteractJS(
     ...position
   })
   const [isEnabled, setEnable] = useState(true)
+  const [zIndex, setZIndex] = useState(1);
 
   const interactRef = useRef(null)
   let { x, y, width, height } = _position
@@ -39,7 +40,13 @@ export function useInteractJS(
               restriction: 'parent', // 親要素内に制限
               // endOnly: true
             })
-          ],
+        ],
+        onstart: () => {
+          setZIndex(1000); // ドラッグ開始時にz-indexを最前面に設定
+        },
+        onend: () => {
+          setZIndex(1); // ドラッグ終了時にz-indexを元に戻す
+        }
       })
       .resizable({
         // resize from all edges and corners
@@ -96,7 +103,8 @@ export function useInteractJS(
       transform: `translate3D(${_position.x}px, ${_position.y}px, 0)`,
       width: _position.width + 'px',
       height: _position.height + 'px',
-      position: 'absolute' as CSSProperties['position']
+      position: 'absolute' as CSSProperties['position'],
+      zIndex: zIndex
     },
     position: _position,
     isEnabled,
