@@ -1,5 +1,9 @@
 import { useInteractJS } from '../../../hooks'
 
+type InteractBlock<T> = {
+    [P in keyof T]?: T[P]
+};
+
 export const InteractBlock = () => {
     const interact = useInteractJS()
 
