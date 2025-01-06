@@ -6,8 +6,8 @@ type Partial<T> = {
 }
 
 const initPosition = {
-  width: 100,
-  height: 100,
+  width: 150,
+  height: 50,
   x: 0,
   y: 0
 }
