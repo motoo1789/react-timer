@@ -33,6 +33,47 @@ export function useInteractJS(
 
   const enable = () => {
     interact((interactRef.current as unknown) as HTMLElement)
+      .dropzone({
+        accept: '.draggable',
+        overlap: 0.75
+      })
+      .on("dropactive",  (event : Interact.InteractEvent)  => {
+        event.target.classList.add("drop-active");
+      })
+      .on("dragenter", (event: Interact.InteractEvent) => {
+        console.log("dragenter");
+        const draggableElement = event.relatedTarget;
+        const dropzoneElement = event.target;
+        dropzoneElement.classList.add("drop-target");
+        draggableElement?.classList.add("can-drop");
+        if (draggableElement) {
+          draggableElement.style.color = "#fff";
+          draggableElement.textContent = "release me";
+        }
+      })
+      .on("dragleave", (event: Interact.InteractEvent) => {
+        const draggableElement = event.relatedTarget;
+        const dropzoneElement = event.target;
+        dropzoneElement.classList.remove("drop-target");
+        draggableElement?.classList.remove("can-drop");
+        if (draggableElement) {
+          draggableElement.textContent = "dragging me";
+        }
+      })
+
+      .on("drop", (event: Interact.InteractEvent) => {
+        const draggableElement = event.relatedTarget;
+        if (draggableElement) {
+          draggableElement.style.color = "#fff";
+          draggableElement.textContent = "hello world";
+        }
+      })
+
+      .on("dropdeactivate", (event: Interact.InteractEvent) => {
+        event.target.classList.remove("drop-active");
+        event.target.classList.remove("drop-target");
+      })
+      
       .draggable({
         inertia: false,
         modifiers: [
