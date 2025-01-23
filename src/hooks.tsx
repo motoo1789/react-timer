@@ -29,7 +29,8 @@ export function useInteractJS(
   const [zIndex, setZIndex] = useState(1);
 
   const interactRef = useRef(null)
-  let { x, y, width, height } = _position
+  let { x, y } = _position
+  const { width, height } = _position
 
   const enable = () => {
     interact((interactRef.current as unknown) as HTMLElement)
@@ -48,9 +49,10 @@ export function useInteractJS(
         const dropzoneElement = event.target;
         dropzoneElement.classList.add("drop-target");
         draggableElement?.classList.add("can-drop");
+        console.log(dropzoneElement);
         if (draggableElement) {
           draggableElement.style.color = "#fff";
-          draggableElement.textContent = "解除";
+          draggableElement.textContent = "重複";
         }
       })
       .on("dragleave", (event: Interact.InteractEvent) => {
@@ -60,7 +62,7 @@ export function useInteractJS(
         dropzoneElement.classList.remove("drop-target");
         draggableElement?.classList.remove("can-drop");
         if (draggableElement) {
-          draggableElement.textContent = "dragging me";
+          draggableElement.textContent = "解除";
         }
       })
 
@@ -68,9 +70,21 @@ export function useInteractJS(
         // ドロップされた時の処理
         console.log("drop");
         const draggableElement = event.relatedTarget;
+        const dropzoneElement = event.target;
+
+        const transform = dropzoneElement.style.transform;
+        const transformValues = transform.slice(transform.indexOf('(') + 1, transform.indexOf(')')).split(', ');
+
+        const dropzonePositionX = transformValues ? parseFloat(transformValues[0]) : 0;
+        const dropzonePositionY = transformValues ? parseFloat(transformValues[1]) : 0;
+  
+        console.log("drop x",dropzonePositionX);
+        console.log("drop y",dropzonePositionY);
         if (draggableElement) {
           draggableElement.style.color = "#fff";
-          draggableElement.textContent = "結合！";
+          draggableElement.textContent = "結合";
+          // x += dropzoneElement.x
+          // y += dropzoneElement.dy
         }
       })
 
