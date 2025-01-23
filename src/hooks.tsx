@@ -83,8 +83,14 @@ export function useInteractJS(
         if (draggableElement) {
           draggableElement.style.color = "#fff";
           draggableElement.textContent = "結合";
-          // x += dropzoneElement.x
-          // y += dropzoneElement.dy
+          x = dropzonePositionX;
+          y = dropzonePositionY + 50;
+          setPosition({
+            width,
+            height,
+            x,
+            y
+          })
         }
       })
 
