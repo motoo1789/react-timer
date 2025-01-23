@@ -10,6 +10,7 @@ export const InteractBlock = () => {
     return (
         <div
             ref={interact.ref}
+            className="draggable"
             style={{
                 ...interact.style,
                 border: '2px solid #0489B1',

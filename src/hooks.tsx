@@ -6,8 +6,8 @@ type Partial<T> = {
 }
 
 const initPosition = {
-  width: 100,
-  height: 100,
+  width: 150,
+  height: 50,
   x: 0,
   y: 0
 }
@@ -33,6 +33,53 @@ export function useInteractJS(
 
   const enable = () => {
     interact((interactRef.current as unknown) as HTMLElement)
+      .dropzone({
+        accept: '.draggable',
+        overlap: 0.5
+      })
+      .on("dropactive",  (event : Interact.InteractEvent)  => {
+        console.log("drop active");
+        event.target.classList.add("drop-active");
+      })
+      .on("dragenter", (event: Interact.InteractEvent) => {
+        // 重なったことの検知
+        console.log("dragenter");
+        const draggableElement = event.relatedTarget;
+        const dropzoneElement = event.target;
+        dropzoneElement.classList.add("drop-target");
+        draggableElement?.classList.add("can-drop");
+        if (draggableElement) {
+          draggableElement.style.color = "#fff";
+          draggableElement.textContent = "解除";
+        }
+      })
+      .on("dragleave", (event: Interact.InteractEvent) => {
+        console.log("dragleave");
+        const draggableElement = event.relatedTarget;
+        const dropzoneElement = event.target;
+        dropzoneElement.classList.remove("drop-target");
+        draggableElement?.classList.remove("can-drop");
+        if (draggableElement) {
+          draggableElement.textContent = "dragging me";
+        }
+      })
+
+      .on("drop", (event: Interact.InteractEvent) => {
+        // ドロップされた時の処理
+        console.log("drop");
+        const draggableElement = event.relatedTarget;
+        if (draggableElement) {
+          draggableElement.style.color = "#fff";
+          draggableElement.textContent = "結合！";
+        }
+      })
+
+      .on("dropdeactivate", (event: Interact.InteractEvent) => {
+        console.log("drop deactivate");
+        event.target.classList.remove("drop-active");
+        event.target.classList.remove("drop-target");
+      })
+      
       .draggable({
         inertia: false,
         modifiers: [
@@ -48,17 +95,6 @@ export function useInteractJS(
           setZIndex(1); // ドラッグ終了時にz-indexを元に戻す
         }
       })
-      .resizable({
-        // resize from all edges and corners
-        edges: { left: true, right: true, bottom: true, top: true },
-        preserveAspectRatio: false,
-        inertia: false,
-        modifiers: [
-            interact.modifiers.restrictEdges({
-              outer: 'parent' // 親要素内に制限
-            })
-          ],
-      })
       .on('dragmove', event => {
         x += event.dx
         y += event.dy
@@ -67,18 +103,6 @@ export function useInteractJS(
           height,
           x,
           y
-        })
-      })
-      .on('resizemove', event => {
-        width = event.rect.width
-        height = event.rect.height
-        x += event.deltaRect.left
-        y += event.deltaRect.top
-        setPosition({
-          x,
-          y,
-          width,
-          height
         })
       })
   }
