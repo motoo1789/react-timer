@@ -24,10 +24,10 @@ function App() {
 
   // const interact = useInteractJS()
   // block
-  const [blocks, setBlocks] = useState([<InteractBlock key={0} />]);
+  const [blocks, setBlocks] = useState([<InteractBlock key={0} id={0}/>]);
 
   const addBlock = () => {
-    setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
+    setBlocks([...blocks, <InteractBlock key={blocks.length} id={blocks.length}/>]);
   };
 
   return (
@@ -52,6 +52,7 @@ function App() {
           height: "900px",
           backgroundColor: "#FFFDD0",
           position: "relative",
+          
         }}
       >
         {blocks}

@@ -12,6 +12,13 @@ const initPosition = {
   y: 0
 }
 
+type Position = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 /**
  * HTML要素を動かせるようにする
  * 返り値で所得できるinteractRefと、interactStyleをそれぞれ対象となるHTML要素の
@@ -19,7 +26,8 @@ const initPosition = {
  * @param position HTML要素の初期座標と大きさ、指定されない場合はinitPositionで指定された値になる
  */
 export function useInteractJS(
-  position: Partial<typeof initPosition> = initPosition
+  position: Partial<typeof initPosition> = initPosition,
+  id: number,
 ) {
   const [_position, setPosition] = useState({
     ...initPosition,
@@ -36,7 +44,18 @@ export function useInteractJS(
     interact((interactRef.current as unknown) as HTMLElement)
       .dropzone({
         accept: '.draggable',
-        overlap: 0.5
+        overlap: 0.3,
+        ondrop(e){
+          console.log(e.target, e.relatedTarget);
+          console.log(`ondrop Component ID: ${id}`);
+
+          // const dragQuiz = e.relatedTarget.getAttribute("quiz");
+          // const dropQuiz = e.target.getAttribute("quiz");
+          // if(dragQuiz == dropQuiz){
+          //   console.log("あたり!!");
+          //   e.relatedTarget.style.backgroundColor = "orange";
+          // }
+        }
       })
       .on("dropactive",  (event : Interact.InteractEvent)  => {
         console.log("drop active");
@@ -54,6 +73,7 @@ export function useInteractJS(
           draggableElement.style.color = "#fff";
           draggableElement.textContent = "重複";
         }
+        console.log(`drageneter Component ID: ${id}`);
       })
       .on("dragleave", (event: Interact.InteractEvent) => {
         console.log("dragleave");
@@ -68,23 +88,24 @@ export function useInteractJS(
 
       .on("drop", (event: Interact.InteractEvent) => {
         // ドロップされた時の処理
+        console.log(`drop Component ID: ${id}`);
         console.log("drop");
         const draggableElement = event.relatedTarget;
-        const dropzoneElement = event.target;
+        // const dropzoneElement = event.target;
 
-        const transform = dropzoneElement.style.transform;
-        const transformValues = transform.slice(transform.indexOf('(') + 1, transform.indexOf(')')).split(', ');
+        // const transform = dropzoneElement.style.transform;
+        // const transformValues = transform.slice(transform.indexOf('(') + 1, transform.indexOf(')')).split(', ');
 
-        const dropzonePositionX = transformValues ? parseFloat(transformValues[0]) : 0;
-        const dropzonePositionY = transformValues ? parseFloat(transformValues[1]) : 0;
+        // const dropzonePositionX = transformValues ? parseFloat(transformValues[0]) : 0;
+        // const dropzonePositionY = transformValues ? parseFloat(transformValues[1]) : 0;
   
-        console.log("drop x",dropzonePositionX);
-        console.log("drop y",dropzonePositionY);
+        // console.log("drop x",dropzonePositionX);
+        // console.log("drop y",dropzonePositionY);
         if (draggableElement) {
           draggableElement.style.color = "#fff";
-          draggableElement.textContent = "結合";
-          x = dropzonePositionX;
-          y = dropzonePositionY + 50;
+          draggableElement.textContent = "結合しに行った";
+          x = 300// dropzonePositionX;
+          y = 300// dropzonePositionY + 50;
           setPosition({
             width,
             height,
@@ -116,6 +137,7 @@ export function useInteractJS(
         }
       })
       .on('dragmove', event => {
+        console.log(`dragmove Component ID: ${id}`);
         x += event.dx
         y += event.dy
         setPosition({
@@ -156,3 +178,4 @@ export function useInteractJS(
     disable: () => setEnable(false)
   }
 }
+
