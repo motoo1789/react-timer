@@ -12,6 +12,13 @@ const initPosition = {
   y: 0
 }
 
+type Position = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 /**
  * HTML要素を動かせるようにする
  * 返り値で所得できるinteractRefと、interactStyleをそれぞれ対象となるHTML要素の
@@ -19,7 +26,9 @@ const initPosition = {
  * @param position HTML要素の初期座標と大きさ、指定されない場合はinitPositionで指定された値になる
  */
 export function useInteractJS(
-  position: Partial<typeof initPosition> = initPosition
+  position: Partial<typeof initPosition> = initPosition,
+  id: number,
+  setPositionCallback: (position: Position) => void
 ) {
   const [_position, setPosition] = useState({
     ...initPosition,
@@ -36,7 +45,7 @@ export function useInteractJS(
     interact((interactRef.current as unknown) as HTMLElement)
       .dropzone({
         accept: '.draggable',
-        overlap: 0.5
+        overlap: 0.3
       })
       .on("dropactive",  (event : Interact.InteractEvent)  => {
         console.log("drop active");
@@ -54,6 +63,7 @@ export function useInteractJS(
           draggableElement.style.color = "#fff";
           draggableElement.textContent = "重複";
         }
+        console.log(`drageneter Component ID: ${id}`);
       })
       .on("dragleave", (event: Interact.InteractEvent) => {
         console.log("dragleave");
@@ -82,16 +92,25 @@ export function useInteractJS(
         console.log("drop y",dropzonePositionY);
         if (draggableElement) {
           draggableElement.style.color = "#fff";
-          draggableElement.textContent = "結合";
+          draggableElement.textContent = "結合しに行った";
           x = dropzonePositionX;
           y = dropzonePositionY + 50;
-          setPosition({
-            width,
-            height,
-            x,
-            y
-          })
+          
+          if (setPositionCallback) {
+            setPositionCallback({
+              x: x,
+              y: y,
+              width: 150,
+              height: 50
+            })
+          }
+          // setPosition(prevState => ({
+          //   ...prevState,
+          //   x,
+          //   y
+          // }));
         }
+        console.log(`drop Component ID: ${id}`);
       })
 
       .on("dropdeactivate", (event: Interact.InteractEvent) => {
@@ -115,15 +134,24 @@ export function useInteractJS(
           setZIndex(1); // ドラッグ終了時にz-indexを元に戻す
         }
       })
-      .on('dragmove', event => {
+      .on('dragmove', (event:Interact.InteractEvent) => {
         x += event.dx
         y += event.dy
-        setPosition({
-          width,
-          height,
-          x,
-          y
-        })
+        // setPosition({
+        //   width,
+        //   height,
+        //   x,
+        //   y
+        // })
+        if (setPositionCallback) {
+          setPositionCallback({
+            x: x,
+            y: y,
+            width: 150,
+            height: 50
+          })
+        }
+        console.log(`dragmove Component ID: ${id}`);
       })
   }
 
