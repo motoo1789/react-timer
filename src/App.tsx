@@ -30,7 +30,11 @@ function App() {
   const addBlock = () => {
     setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
   };
+  const [parent, setParent] = useState(null);
 
+  function handleDragEnd({over}) {
+    setParent(over ? over.id : null);
+  }
   return (
     <>
       <TimeContext.Provider value={{ totalSeconds, setTotalSeconds }}>
@@ -47,7 +51,12 @@ function App() {
       <button onClick={() => interact.disable()}>無効化</button>
     */}
       <button onClick={addBlock}>ブロックを追加</button>
-      <DndContext>
+
+      <DndContext onDragEnd={handleDragEnd}>
+        {!parent ? blocks : null}
+        {blocks.map((block, index) => (
+            <InteractBlock key={index} />
+          ))}
         <div
           style={{
             width: "900px",
@@ -56,11 +65,15 @@ function App() {
             position: "relative",
           }}
         >
-          {blocks}
+          {blocks.map((block, index) => (
+            <InteractBlock key={index} />
+          ))}
+          
         </div>
       </DndContext>
     </>
   );
 }
+
 
 export default App;
