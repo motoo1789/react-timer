@@ -5,6 +5,7 @@ import { TimerState } from "./components/molecules/TimerState";
 import { TimeSelect } from "./components/molecules/TimeSelect";
 import { ShowTimer } from "./components/atoms/ShowTimer";
 import { InteractBlock } from "./components/molecules/blocks/InteractBlock";
+import {DndContext} from '@dnd-kit/core';
 
 type TimeContextType = {
   totalSeconds: number;
@@ -46,16 +47,18 @@ function App() {
       <button onClick={() => interact.disable()}>無効化</button>
     */}
       <button onClick={addBlock}>ブロックを追加</button>
-      <div
-        style={{
-          width: "900px",
-          height: "900px",
-          backgroundColor: "#FFFDD0",
-          position: "relative",
-        }}
-      >
-        {blocks}
-      </div>
+      <DndContext>
+        <div
+          style={{
+            width: "900px",
+            height: "900px",
+            backgroundColor: "#FFFDD0",
+            position: "relative",
+          }}
+        >
+          {blocks}
+        </div>
+      </DndContext>
     </>
   );
 }
