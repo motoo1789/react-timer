@@ -4,7 +4,10 @@ import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
 import { TimeSelect } from "./components/molecules/TimeSelect";
 import { ShowTimer } from "./components/atoms/ShowTimer";
-import { InteractBlock } from "./components/molecules/blocks/InteractBlock";
+
+import { DndProvider } from "react-dnd";
+import { DnDArea } from "./components/molecules/DnDArea";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 type TimeContextType = {
   totalSeconds: number;
@@ -56,6 +59,9 @@ function App() {
       >
         {blocks}
       </div>
+      <DndProvider backend={HTML5Backend}>
+        <DnDArea />
+      </DndProvider>
     </>
   );
 }
