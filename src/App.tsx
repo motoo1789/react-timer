@@ -59,7 +59,6 @@ function App() {
       >
         {blocks}
       </div>
-
       <DndProvider backend={HTML5Backend}>
         <DnDArea />
       </DndProvider>
