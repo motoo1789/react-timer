@@ -5,7 +5,9 @@ import { TimerState } from "./components/molecules/TimerState";
 import { TimeSelect } from "./components/molecules/TimeSelect";
 import { ShowTimer } from "./components/atoms/ShowTimer";
 import { InteractBlock } from "./components/molecules/blocks/InteractBlock";
-import {DndContext} from '@dnd-kit/core';
+import { DndContext } from "@dnd-kit/core";
+import { DnDKitArea } from "./components/molecules/DnDKitArea";
+import { BlockGroup } from "./components/molecules/blocks/BlockGroup";
 
 type TimeContextType = {
   totalSeconds: number;
@@ -30,11 +32,18 @@ function App() {
   const addBlock = () => {
     setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
   };
-  const [parent, setParent] = useState(null);
+
 
   function handleDragEnd({over}) {
     setParent(over ? over.id : null);
   }
+
+  const [parent, setParent] = useState(null);
+  const draggable = (
+    <BlockGroup id="draggable">
+      Go ahead, drag me.
+    </BlockGroup>
+  );
   return (
     <>
       <TimeContext.Provider value={{ totalSeconds, setTotalSeconds }}>
@@ -46,34 +55,18 @@ function App() {
           setShowTimerColor={setShowTimerColor}
         />
       </TimeContext.Provider>
-      {/*}
-      <button onClick={() => interact.enable()}>有効化</button>
-      <button onClick={() => interact.disable()}>無効化</button>
-    */}
+
       <button onClick={addBlock}>ブロックを追加</button>
 
       <DndContext onDragEnd={handleDragEnd}>
-        {!parent ? blocks : null}
-        {blocks.map((block, index) => (
-            <InteractBlock key={index} />
-          ))}
-        <div
-          style={{
-            width: "900px",
-            height: "900px",
-            backgroundColor: "#FFFDD0",
-            position: "relative",
-          }}
-        >
-          {blocks.map((block, index) => (
-            <InteractBlock key={index} />
-          ))}
-          
-        </div>
+        {!parent ? draggable : null}
+        handleDragEnd.x
+        <DnDKitArea id="droppable">
+          {parent === "droppable" ? draggable : "Drop here"}
+        </DnDKitArea>
       </DndContext>
     </>
   );
 }
-
 
 export default App;
