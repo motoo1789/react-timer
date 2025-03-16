@@ -8,6 +8,7 @@ import { InteractBlock } from "./components/molecules/blocks/InteractBlock";
 import { DndContext } from "@dnd-kit/core";
 import { DnDKitArea } from "./components/molecules/DnDKitArea";
 import { BlockGroup } from "./components/molecules/blocks/BlockGroup";
+import { BlockGroupDnD } from "./components/molecules/blocks/BlockGroupDnD";
 
 type TimeContextType = {
   totalSeconds: number;
@@ -30,7 +31,8 @@ function App() {
   const [blocks, setBlocks] = useState([<InteractBlock key={0} />]);
 
   const addBlock = () => {
-    setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
+    // setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
+    setLeft(prev => prev + 10);
   };
 
 
@@ -44,6 +46,9 @@ function App() {
       Go ahead, drag me.
     </BlockGroup>
   );
+  const label = "test";
+  const [top, setTop] = useState(0);
+  const [left, setLeft] = useState(0);
   return (
     <>
       <TimeContext.Provider value={{ totalSeconds, setTotalSeconds }}>
@@ -58,11 +63,19 @@ function App() {
 
       <button onClick={addBlock}>ブロックを追加</button>
 
-      <DndContext onDragEnd={handleDragEnd}>
+      {/* <DndContext onDragEnd={handleDragEnd}> */}
+      <DndContext onDragEnd={(event) => {
+        console.log(event)
+        setTop(event.delta.y);
+        setLeft(event.delta.x);
+      }}>
         {!parent ? draggable : null}
-        handleDragEnd.x
         <DnDKitArea id="droppable">
-          {parent === "droppable" ? draggable : "Drop here"}
+          
+          {/* <BlockGroupDnD label={label} top={top} left={left}> */}
+          <BlockGroupDnD x={left} y={top} id={0}>
+            Go ahead, drag me.
+          </BlockGroupDnD>
         </DnDKitArea>
       </DndContext>
     </>
@@ -70,3 +83,4 @@ function App() {
 }
 
 export default App;
+
