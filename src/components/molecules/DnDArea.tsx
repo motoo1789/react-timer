@@ -20,81 +20,56 @@ const BoxStyle: React.CSSProperties = {
 };
 
 type BlockGroupType = {
-  id: number
+  id: number;
   top: number;
   left: number;
-};
-
-// type UpdatePoint = {
-
-//     id: {
-//         value: number,
-//         set: (id:number) => void
-//     },
-//     top: {
-//         value: number,
-//         set: (top:number) => void
-
-//     },
-//     left: {
-//         value: number,
-//         set: (left:number) => void
-//     }
-// };
-
-type UpdatePoint = {
-
-
-    topValue: number,
-    setTop: React.Dispatch<React.SetStateAction<number>>,
-    leftValue: number,
-    setLeft: React.Dispatch<React.SetStateAction<number>>,
 
 };
 
 export const DnDArea = () => {
-  // 追加するときにAreaの関数を渡してdragしたときに渡された関数を呼べば、親に座標を渡せる？？
-  const [blockGroups, setBlockGroups] = useState([<BlockGroup id={0} top={0} left={0} />]);
-  // const [blockGroups, setBlockGroup] = useState([<BlockGroup key={0} top={0} left={0} />]);
 
+  const [blockGroups, setBlockGroups] = useState<BlockGroupType[]>([{ id: 0, top: 0, left: 0 }]);
   const moveBlock = (id: number, left: number, top: number) => {
-    setBlockGroups((prevBlocks ) =>
+    setBlockGroups((prevBlocks) =>
       prevBlocks.map((block) =>
         block.id === id ? { ...block, left, top } : block
       )
     );
   };
 
-  // const [collected, drag, dragPreview] = useDrag(
-  //   {
-  //     type: "timerBox",
-  //     item: { top: box.top, left: box.left }
-  //   },
-  //   [box]
-  // );
+  const addBlock = () => {
+    // blockGroupsのlengthをidにすると削除した時とかでエラー出る
+    setBlockGroups([...blockGroups, { 
+      id: blockGroups.length, 
+      top: Math.floor(Math.random() * 500), 
+      left: Math.floor(Math.random() * 500) 
+    }]);
+  };
 
   const [collectedProps, drop] = useDrop(
     () => ({
       accept: "timerBox",
-      drop(item: { id: number; top: number; left: number; setTop: React.Dispatch<React.SetStateAction<number>>; setLeft: React.Dispatch<React.SetStateAction<number>> } , monitor) {
-        const delta = monitor.getDifferenceFromInitialOffset() as XYCoord;
-        item.setTop(Math.round(item.topValue + delta.y));
-        item.setLeft(Math.round(item.leftValue + delta.x));
-        // const left = Math.round(item.left + delta.x);
-        // const top = Math.round(item.top + delta.y);
+      drop(item: { id: number; top: number; left: number }, monitor) {
 
+        const delta = monitor.getDifferenceFromInitialOffset() as XYCoord;
+        const left = Math.round(item.left + delta.x);
+        const top = Math.round(item.top + delta.y);
+        moveBlock(item.id, left, top);
+        console.log(monitor.getClientOffset());
         return undefined;
-      }
+      },
     }),
     []
   );
 
-
   return (
-
+    <>
+      <button onClick={addBlock}>ブロックを追加</button>
       <div ref={drop} style={ContainerStyle}>
-          { blockGroups }
+        {blockGroups.map((block) => (
+          <BlockGroup key={block.id} id={block.id} top={block.top} left={block.left} />
+        ))}
       </div>
-
+    </>
   );
 };

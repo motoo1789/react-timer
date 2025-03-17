@@ -25,13 +25,10 @@ function App() {
   const [showTimerColor, setShowTimerColor] = useState("black");
   const [totalSeconds, setTotalSeconds] = useState(0);
 
-  // const interact = useInteractJS()
   // block
   const [blocks, setBlocks] = useState([<BlockGroup key={0} top={0} left={0} />]);
 
-  const addBlock = () => {
-    setBlocks([...blocks, <BlockGroup key={blocks.length} top={0} left={0} />]);
-  };
+
 
   return (
     <>
@@ -48,8 +45,8 @@ function App() {
       <button onClick={() => interact.enable()}>有効化</button>
       <button onClick={() => interact.disable()}>無効化</button>
     */}
-      <button onClick={addBlock}>ブロックを追加</button>
-      <div
+
+      {/* <div
         style={{
           width: "900px",
           height: "900px",
@@ -58,7 +55,7 @@ function App() {
         }}
       >
         {blocks}
-      </div>
+      </div> */}
       <DndProvider backend={HTML5Backend}>
         <DnDArea />
       </DndProvider>
