@@ -87,7 +87,10 @@ function App() {
       <button onClick={addBlock}>ブロックを追加</button>
 
       <DndContext onDragEnd={(event) => {
-        // if(canDropToDropArea(event.over?.id as string) && canDropToTimerBlockArea(position,event.active?.id as string)) {
+        const droppable: string = event.over?.id as string;
+        const draggable: string = event.active?.id as string;
+        /* エリアの移動 */
+        // if(canDropToDropArea(droppable) && canDropToTimerBlockArea(position, draggable)) {
         //   setPosition((prev) => ({
         //     ...prev,
         //     timer_1: {
@@ -95,23 +98,32 @@ function App() {
         //       y: prev.timer_1.y + event.delta.y,
         //     }}));
         // } else 
-        if (canDropToTimerBlock(position,event.active?.id as string) && !canDropToDropArea(event.over?.id as string))  {
+        if (canDropToTimerBlock(position, draggable) && !canDropToDropArea(droppable))  {
           console.log('grouping');
-          const updateTimer: string= event.active?.id as string;
+          console.log('droppable',droppable);
+          console.log('draggable',draggable);
+          console.log('grouping[droppable]',position[droppable]);
+          console.log('grouping[droppable]',position[draggable]);
+          let test = 0;
           // draggableの座標を更新
-          setPosition((prev) => ({
+          setPosition((prev) => ( test = prev[droppable].y,console.log(draggable) , {
             ...prev,
-            [updateTimer]: {
-              x: prev[updateTimer].x + event.delta.x,
-              y: prev[updateTimer].y + event.delta.y,
+            [draggable]: {
+              x: prev[droppable].x,
+              y: prev[droppable].y + 50,
+
+              // x: prev[updateTimer].x + event.delta.x,
+              // y: prev[updateTimer].y + event.delta.y,
             },
           }));
           console.log(position);
+          console.log('test',test);
         }
       }}>
         <DnDKitArea >
           <BlockGroupDnD id={'timer_1'} position={position.timer_1} />
           <BlockGroupDnD id={'timer_2'} position={position.timer_2} />
+          <BlockGroupDnD id={'timer_3'} position={position.timer_3} />
         </DnDKitArea>
       </DndContext>
     </>
@@ -120,3 +132,7 @@ function App() {
 
 export default App;
 
+
+// draggableをdroppableの下に来るようにdndしたいです
+// たとえば、timer_1をtimer_2にドロップするとtimer_2の下にtimer_1が表示されるようにしたいです。
+// 現在のコードだとtimer_1をtimer_2にドロップするとtimer_1の座標がtimer_2の上にくるようになります。
