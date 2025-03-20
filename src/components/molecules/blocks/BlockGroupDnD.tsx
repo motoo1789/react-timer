@@ -1,4 +1,4 @@
-import {useDraggable} from '@dnd-kit/core';
+import {useDraggable, useDroppable} from '@dnd-kit/core';
 import {CSS} from '@dnd-kit/utilities';
 import React, { useState, useEffect } from 'react';
 
@@ -10,8 +10,11 @@ type BlockGroupType = {
 export const BlockGroupDnD = (props:BlockGroupType) => {
 
   const position = props.position;
+  const {isOver, setNodeRef: setDroppableRef} = useDroppable({
+    id: props.id,
+  });
 
-  const {attributes, listeners, setNodeRef, transform} = useDraggable({
+  const {attributes, listeners, setNodeRef: setDraggableRef, transform} = useDraggable({
     id: props.id,
   });
   // transformからtopとleftを取り出す
@@ -27,7 +30,10 @@ export const BlockGroupDnD = (props:BlockGroupType) => {
 
   return (
     <>
-      <div ref={setNodeRef} {...listeners}  style={style} >テスト</div>
+      <div ref={(node) => {
+        setDroppableRef(node);
+        setDraggableRef(node);
+      }} {...listeners}  style={style} >テスト{props.id}</div>
     </>
   );
 };

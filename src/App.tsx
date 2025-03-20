@@ -42,6 +42,16 @@ function App() {
   };
 
   /**
+   * タイマーをタイマーにドロップした時の判定
+   * @param droppable : string
+   * @param droggables : object
+   * @returns boolean
+   */
+    const canDropToTimerBlock = (droppbles: object, droggables:string) => {
+      return Object.keys(droppbles).includes(droggables); 
+    };
+
+  /**
    * ドロップエリアにドロップされたか判定
    * @param droppable 
    * @returns boolean
@@ -50,13 +60,16 @@ function App() {
     return droppble === DROP_AREA;
   };
 
-  
 
   const [parent, setParent] = useState(null);
-  const [position, setPosition] = useState({
+  const [position, setPosition] = useState<{ [key: string]: { x: number; y: number } }>({
     'timer_1': { x: 50, y: 50 },
-    'timer_2': { x: 50, y: 50 },
+    'timer_2': { x: 100, y: 100 },
     'timer_3': { x: 150, y: 150 },
+  });
+  const [grouping, setGrouping] = useState({
+    timer_1: ['timer_1'],
+    timer_3: ['timer_3'],
   });
 
   return (
@@ -74,17 +87,31 @@ function App() {
       <button onClick={addBlock}>ブロックを追加</button>
 
       <DndContext onDragEnd={(event) => {
-        if(canDropToDropArea(event.over?.id as string) && canDropToTimerBlockArea(position,event.active?.id as string)) {
+        // if(canDropToDropArea(event.over?.id as string) && canDropToTimerBlockArea(position,event.active?.id as string)) {
+        //   setPosition((prev) => ({
+        //     ...prev,
+        //     timer_1: {
+        //       x: prev.timer_1.x + event.delta.x,
+        //       y: prev.timer_1.y + event.delta.y,
+        //     }}));
+        // } else 
+        if (canDropToTimerBlock(position,event.active?.id as string) && !canDropToDropArea(event.over?.id as string))  {
+          console.log('grouping');
+          const updateTimer: string= event.active?.id as string;
+          // draggableの座標を更新
           setPosition((prev) => ({
             ...prev,
-            timer_1: {
-              x: prev.timer_1.x + event.delta.x,
-              y: prev.timer_1.y + event.delta.y,
-            }}));
-          }}
-        }>
+            [updateTimer]: {
+              x: prev[updateTimer].x + event.delta.x,
+              y: prev[updateTimer].y + event.delta.y,
+            },
+          }));
+          console.log(position);
+        }
+      }}>
         <DnDKitArea >
           <BlockGroupDnD id={'timer_1'} position={position.timer_1} />
+          <BlockGroupDnD id={'timer_2'} position={position.timer_2} />
         </DnDKitArea>
       </DndContext>
     </>
