@@ -3,28 +3,31 @@ import {CSS} from '@dnd-kit/utilities';
 import React, { useState, useEffect } from 'react';
 
 type BlockGroupType = {
-  children: React.ReactNode;
+  position: { x: number; y: number };
+  // setPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
 };
 
-export const BlockGroupDnD = (props: {x:number, y:number, id:number, children:any}) => {
+export const BlockGroupDnD = (props:BlockGroupType) => {
+
+  const position = props.position;
 
   const {attributes, listeners, setNodeRef, transform} = useDraggable({
-    id: props.id,
+    id: 'draggable',
   });
   // transformからtopとleftを取り出す
   const style = {
-    // Outputs `translate3d(x, y, 0)`
-    transform: CSS.Translate.toString(transform),
-    //position: 'absolute',
-    //position: 'relative',
-    top: props.y,
-    left: props.x,
-
+    width: 100,
+    height: 50,
+    position: 'relative' as 'relative',
+    backgroundColor: "white",
+    color: "black",
+    left: (transform ? position.x + transform.x : position.x) + "px",
+    top: (transform ? position.y + transform.y : position.y) + "px",
   };
 
   return (
-    <button ref={setNodeRef} style={style} {...listeners} {...attributes}>
-      {props.children}
-    </button>
+    <>
+      <div ref={setNodeRef} {...listeners}  style={style} >テスト</div>
+    </>
   );
 };

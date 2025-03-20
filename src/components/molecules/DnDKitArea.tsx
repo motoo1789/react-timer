@@ -1,42 +1,23 @@
 import React, { useState } from "react";
 
-import { BlockGroup } from "./blocks/BlockGroup";
-
+import { BlockGroupDnD } from "./blocks/BlockGroupDnD";
+import { DndContext } from "@dnd-kit/core";
 import {useDroppable} from '@dnd-kit/core';
 
 
 type BlockGroupType = {
-  id: number
-  top: number;
-  left: number;
+  children: React.ReactNode;
+  // position: { x: number; y: number };
+  // setPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
 };
 
-// type UpdatePoint = {
 
-//     id: {
-//         value: number,
-//         set: (id:number) => void
-//     },
-//     top: {
-//         value: number,
-//         set: (top:number) => void
-
-//     },
-//     left: {
-//         value: number,
-//         set: (left:number) => void
-//     }
-// };
-
-
-export const DnDKitArea = (props) => {
+export const DnDKitArea = (props:BlockGroupType) => {
   // 追加するときにAreaの関数を渡してdragしたときに渡された関数を呼べば、親に座標を渡せる？？
-  // const [blockGroups, setBlockGroups] = useState([<BlockGroup id={0} top={0} left={0} />]);
-  // const [blockGroups, setBlockGroup] = useState([<BlockGroup key={0} top={0} left={0} />]);
 
-
+  // const [position, setPosition] = useState({ x: 50, y: 50 });
   const {isOver, setNodeRef} = useDroppable({
-    id: props.id,
+    id: 'droppable',
   });
   const style = {
     opacity: isOver ? 1 : 0.5,
@@ -47,8 +28,21 @@ export const DnDKitArea = (props) => {
   };
 
   return (
+    // <DndContext onDragEnd={(event) => {
+    //   console.log(event)
+    //   if(event.active?.id === "draggable") {
+    //     console.log("dropped");
+    //     console.log(setNodeRef)
+    //     setPosition((prev) => ({
+    //         x: prev.x + event.delta.x,
+    //         y: prev.y + event.delta.y,
+    //       }));
+    //     }
+    // }}>
     <div ref={setNodeRef} style={style}>
       {props.children}
     </div>
+    // </DndContext>
+    
   );
 };

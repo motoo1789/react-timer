@@ -25,27 +25,55 @@ function App() {
   const [second, setSecond] = useState(0);
   const [showTimerColor, setShowTimerColor] = useState("black");
   const [totalSeconds, setTotalSeconds] = useState(0);
+  const DROP_AREA = "DROP_AREA";
 
   // const interact = useInteractJS()
   // block
   const [blocks, setBlocks] = useState([<InteractBlock key={0} />]);
+
+  // テスト
+  const [objects, setObjects] = useState({
+    timer_1: { x: 0, y: 0 },
+    timer_2: { x: 50, y: 50 },
+    timer_3: { x: 150, y: 150 },
+  });
 
   const addBlock = () => {
     // setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
     setLeft(prev => prev + 10);
   };
 
+  /**
+   * タイマーをタイマーにドロップした時の判定
+   * タイマーがグループにドロップされた時の判定
+   * @param droppable : string
+   * @param droggables : object
+   * @returns boolean
+   */
+  const canDropToTimerBlockArea = (droggables: object, droppble: string) => {
+    return Object.keys(droggables).includes(droppble); 
+  };
 
-  function handleDragEnd({over}) {
-    setParent(over ? over.id : null);
-  }
+  /**
+   * ドロップエリアにドロップされたか判定
+   * @param droppable 
+   * @returns boolean
+   */
+  const canDropToDropArea = (droppble: string) => {
+    return droppble === DROP_AREA;
+  };
+
+  
 
   const [parent, setParent] = useState(null);
-  const draggable = (
-    <BlockGroup id="draggable">
-      Go ahead, drag me.
-    </BlockGroup>
-  );
+  const [position, setPosition] = useState({
+    'timer_1': { x: 50, y: 50 }
+  });
+  // const draggable = (
+  //   <BlockGroup id="draggable">
+  //     Go ahead, drag me.
+  //   </BlockGroup>
+  // );
   const label = "test";
   const [top, setTop] = useState(0);
   const [left, setLeft] = useState(0);
@@ -63,19 +91,19 @@ function App() {
 
       <button onClick={addBlock}>ブロックを追加</button>
 
-      {/* <DndContext onDragEnd={handleDragEnd}> */}
       <DndContext onDragEnd={(event) => {
-        console.log(event)
-        setTop(event.delta.y);
-        setLeft(event.delta.x);
-      }}>
-        {!parent ? draggable : null}
-        <DnDKitArea id="droppable">
-          
-          {/* <BlockGroupDnD label={label} top={top} left={left}> */}
-          <BlockGroupDnD x={left} y={top} id={0}>
-            Go ahead, drag me.
-          </BlockGroupDnD>
+        if(event.over?.id === "droppable" && event.active?.id === "draggable") {
+          setPosition((prev) => ({
+            ...prev,
+            timer_1: {
+              x: prev.timer_1.x + event.delta.x,
+              y: prev.timer_1.y + event.delta.y,
+            }}));
+          }}
+        }>
+        {/* {!parent ? draggable : null} */}
+        <DnDKitArea >
+          <BlockGroupDnD position={position.timer_1} />
         </DnDKitArea>
       </DndContext>
     </>
