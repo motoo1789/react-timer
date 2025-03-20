@@ -4,10 +4,8 @@ import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
 import { TimeSelect } from "./components/molecules/TimeSelect";
 import { ShowTimer } from "./components/atoms/ShowTimer";
-import { InteractBlock } from "./components/molecules/blocks/InteractBlock";
 import { DndContext } from "@dnd-kit/core";
 import { DnDKitArea } from "./components/molecules/DnDKitArea";
-import { BlockGroup } from "./components/molecules/blocks/BlockGroup";
 import { BlockGroupDnD } from "./components/molecules/blocks/BlockGroupDnD";
 
 type TimeContextType = {
@@ -27,20 +25,9 @@ function App() {
   const [totalSeconds, setTotalSeconds] = useState(0);
   const DROP_AREA = "DROP_AREA";
 
-  // const interact = useInteractJS()
-  // block
-  const [blocks, setBlocks] = useState([<InteractBlock key={0} />]);
-
-  // テスト
-  const [objects, setObjects] = useState({
-    timer_1: { x: 0, y: 0 },
-    timer_2: { x: 50, y: 50 },
-    timer_3: { x: 150, y: 150 },
-  });
-
   const addBlock = () => {
     // setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
-    setLeft(prev => prev + 10);
+
   };
 
   /**
@@ -50,7 +37,7 @@ function App() {
    * @param droggables : object
    * @returns boolean
    */
-  const canDropToTimerBlockArea = (droggables: object, droppble: string) => {
+  const canDropToTimerBlockArea = (droggables: object, droppble:string) => {
     return Object.keys(droggables).includes(droppble); 
   };
 
@@ -67,16 +54,11 @@ function App() {
 
   const [parent, setParent] = useState(null);
   const [position, setPosition] = useState({
-    'timer_1': { x: 50, y: 50 }
+    'timer_1': { x: 50, y: 50 },
+    'timer_2': { x: 50, y: 50 },
+    'timer_3': { x: 150, y: 150 },
   });
-  // const draggable = (
-  //   <BlockGroup id="draggable">
-  //     Go ahead, drag me.
-  //   </BlockGroup>
-  // );
-  const label = "test";
-  const [top, setTop] = useState(0);
-  const [left, setLeft] = useState(0);
+
   return (
     <>
       <TimeContext.Provider value={{ totalSeconds, setTotalSeconds }}>
@@ -92,7 +74,7 @@ function App() {
       <button onClick={addBlock}>ブロックを追加</button>
 
       <DndContext onDragEnd={(event) => {
-        if(event.over?.id === "droppable" && event.active?.id === "draggable") {
+        if(canDropToDropArea(event.over?.id as string) && canDropToTimerBlockArea(position,event.active?.id as string)) {
           setPosition((prev) => ({
             ...prev,
             timer_1: {
@@ -101,9 +83,8 @@ function App() {
             }}));
           }}
         }>
-        {/* {!parent ? draggable : null} */}
         <DnDKitArea >
-          <BlockGroupDnD position={position.timer_1} />
+          <BlockGroupDnD id={'timer_1'} position={position.timer_1} />
         </DnDKitArea>
       </DndContext>
     </>

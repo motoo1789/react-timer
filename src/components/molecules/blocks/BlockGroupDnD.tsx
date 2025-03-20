@@ -3,8 +3,8 @@ import {CSS} from '@dnd-kit/utilities';
 import React, { useState, useEffect } from 'react';
 
 type BlockGroupType = {
+  id: string;
   position: { x: number; y: number };
-  // setPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
 };
 
 export const BlockGroupDnD = (props:BlockGroupType) => {
@@ -12,7 +12,7 @@ export const BlockGroupDnD = (props:BlockGroupType) => {
   const position = props.position;
 
   const {attributes, listeners, setNodeRef, transform} = useDraggable({
-    id: 'draggable',
+    id: props.id,
   });
   // transformからtopとleftを取り出す
   const style = {
