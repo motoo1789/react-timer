@@ -90,34 +90,25 @@ function App() {
         const droppable: string = event.over?.id as string;
         const draggable: string = event.active?.id as string;
         /* エリアの移動 */
-        // if(canDropToDropArea(droppable) && canDropToTimerBlockArea(position, draggable)) {
-        //   setPosition((prev) => ({
-        //     ...prev,
-        //     timer_1: {
-        //       x: prev.timer_1.x + event.delta.x,
-        //       y: prev.timer_1.y + event.delta.y,
-        //     }}));
-        // } else 
+        if(canDropToDropArea(droppable) && canDropToTimerBlockArea(position, draggable)) {
+          setPosition((prev) => ({
+            ...prev,
+            [draggable]: {
+              x: prev[draggable].x + event.delta.x,
+              y: prev[draggable].y + event.delta.y,
+            }}));
+        } else 
         if (canDropToTimerBlock(position, draggable) && !canDropToDropArea(droppable))  {
           console.log('grouping');
-          console.log('droppable',droppable);
-          console.log('draggable',draggable);
-          console.log('grouping[droppable]',position[droppable]);
-          console.log('grouping[droppable]',position[draggable]);
-          let test = 0;
+          const HIGHT = 50;
           // draggableの座標を更新
-          setPosition((prev) => ( test = prev[droppable].y,console.log(draggable) , {
+          setPosition((prev) => ({
             ...prev,
             [draggable]: {
               x: prev[droppable].x,
-              y: prev[droppable].y + 50,
-
-              // x: prev[updateTimer].x + event.delta.x,
-              // y: prev[updateTimer].y + event.delta.y,
-            },
+              y: prev[droppable].y + HIGHT,
+            }
           }));
-          console.log(position);
-          console.log('test',test);
         }
       }}>
         <DnDKitArea >
@@ -131,8 +122,3 @@ function App() {
 }
 
 export default App;
-
-
-// draggableをdroppableの下に来るようにdndしたいです
-// たとえば、timer_1をtimer_2にドロップするとtimer_2の下にtimer_1が表示されるようにしたいです。
-// 現在のコードだとtimer_1をtimer_2にドロップするとtimer_1の座標がtimer_2の上にくるようになります。

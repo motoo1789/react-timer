@@ -8,7 +8,7 @@ type BlockGroupType = {
 };
 
 export const BlockGroupDnD = (props:BlockGroupType) => {
-
+  // console.log(props);
   const position = props.position;
   const {isOver, setNodeRef: setDroppableRef} = useDroppable({
     id: props.id,
@@ -21,7 +21,7 @@ export const BlockGroupDnD = (props:BlockGroupType) => {
   const style = {
     width: 100,
     height: 50,
-    position: 'relative' as 'relative',
+    position: 'absolute' as 'absolute',
     backgroundColor: "white",
     color: "black",
     left: (transform ? position.x + transform.x : position.x) + "px",

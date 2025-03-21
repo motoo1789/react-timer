@@ -18,6 +18,7 @@ export const DnDKitArea = (props:BlockGroupType) => {
     backgroundColor: isOver ? 'green' : 'blue',
     width: '500px',
     height: '500px',
+    position: 'relative' as 'relative',
   };
 
   return (
