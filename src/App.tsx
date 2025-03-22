@@ -1,14 +1,14 @@
-import { useState, createContext } from "react";
+import { useState, createContext, useEffect } from "react";
 
 import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
 import { TimeSelect } from "./components/molecules/TimeSelect";
 import { ShowTimer } from "./components/atoms/ShowTimer";
-import { InteractBlock } from "./components/molecules/blocks/InteractBlock";
+
 import { DndContext } from "@dnd-kit/core";
 import { DnDKitArea } from "./components/molecules/DnDKitArea";
-import { BlockGroup } from "./components/molecules/blocks/BlockGroup";
 import { BlockGroupDnD } from "./components/molecules/blocks/BlockGroupDnD";
+
 
 type TimeContextType = {
   totalSeconds: number;
@@ -26,57 +26,89 @@ function App() {
   const [showTimerColor, setShowTimerColor] = useState("black");
   const [totalSeconds, setTotalSeconds] = useState(0);
   const DROP_AREA = "DROP_AREA";
-
-  // const interact = useInteractJS()
-  // block
-  const [blocks, setBlocks] = useState([<InteractBlock key={0} />]);
-
-  // テスト
-  const [objects, setObjects] = useState({
-    timer_1: { x: 0, y: 0 },
-    timer_2: { x: 50, y: 50 },
-    timer_3: { x: 150, y: 150 },
+  const [position, setPosition] = useState<{ [key: string]: { x: number; y: number } }>({
+    'timer_1': { x: 50, y: 50 },
+    'timer_2': { x: 100, y: 100 },
+    'timer_3': { x: 200, y: 200 },
   });
+  const [grouping, setGrouping] = useState<{ [key:string]: string[]}>({});
+
 
   const addBlock = () => {
     // setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
-    setLeft(prev => prev + 10);
   };
+
 
   /**
    * タイマーをタイマーにドロップした時の判定
    * タイマーがグループにドロップされた時の判定
-   * @param droppable : string
-   * @param droggables : object
+   * @param {string} droppable : string
+   * @param {string} droggables : object
    * @returns boolean
    */
-  const canDropToTimerBlockArea = (droggables: object, droppble: string) => {
+  const canDropToTimerBlockArea = (droggables: object, droppble:string) => {
     return Object.keys(droggables).includes(droppble); 
   };
 
   /**
+   * タイマーをタイマーにドロップした時の判定
+   * @param {string} droppable : string
+   * @param {string} droggables : object
+   * @returns boolean
+   */
+    const canDropToTimerBlock = (droppbles: object, droggables:string) => {
+      return Object.keys(droppbles).includes(droggables); 
+    };
+
+  /**
    * ドロップエリアにドロップされたか判定
-   * @param droppable 
+   * @param {string} droppable 
    * @returns boolean
    */
   const canDropToDropArea = (droppble: string) => {
     return droppble === DROP_AREA;
   };
 
-  
+  /**
+   * ドラッグされた要素がグループにあるか判定
+   * @param {string} draggable
+   * @returns boolean
+   */
+  const canGroupDrag = (draggable: string) => {
+    return Object.keys(grouping).includes(draggable);
+  }
 
-  const [parent, setParent] = useState(null);
-  const [position, setPosition] = useState({
-    'timer_1': { x: 50, y: 50 }
-  });
-  // const draggable = (
-  //   <BlockGroup id="draggable">
-  //     Go ahead, drag me.
-  //   </BlockGroup>
-  // );
-  const label = "test";
-  const [top, setTop] = useState(0);
-  const [left, setLeft] = useState(0);
+  /**
+   * ドラッグされた要素がグループにあるか判定
+   * @param {string} draggable
+   * @returns boolean | string
+   */
+  const canRemoveTimerBlock = (draggable: string) => {
+    // for(const group of Object.values(grouping)) {
+    //   if(group.includes(draggable)) return true
+    // }
+    for(const [key, value] of Object.entries(grouping)) {
+      if(value.includes(draggable)) return key;
+    }
+    return false;
+  }
+
+  /**
+   * droppableとdraggableが違う判定
+   * @param {string} droppable 
+   * @param {string} draggable
+   * @returns boolean
+   */
+  const isDifferenceDroppableDraggable = (droppable: string, draggable: string) => {
+    return droppable !== draggable;
+  }
+
+  // postionやgroupingの変更を監視
+  useEffect(() => {
+    console.log('position', position);
+    console.log('grouping', grouping);
+  }, [position, grouping]);
+
   return (
     <>
       <TimeContext.Provider value={{ totalSeconds, setTotalSeconds }}>
@@ -92,23 +124,78 @@ function App() {
       <button onClick={addBlock}>ブロックを追加</button>
 
       <DndContext onDragEnd={(event) => {
-        if(event.over?.id === "droppable" && event.active?.id === "draggable") {
+        const droppable: string = event.over?.id as string;
+        const draggable: string = event.active?.id as string;
+        // グループがドラッグされた時
+        if (canGroupDrag(draggable) ) {
+          const groupingBlock : string[] = grouping[draggable];
+          console.log('group drag');
           setPosition((prev) => ({
             ...prev,
-            timer_1: {
-              x: prev.timer_1.x + event.delta.x,
-              y: prev.timer_1.y + event.delta.y,
-            }}));
-          }}
-        }>
-        {/* {!parent ? draggable : null} */}
+            [draggable]: {
+              x: prev[draggable].x + event.delta.x,
+              y: prev[draggable].y + event.delta.y,
+            }}
+          ));
+          for( const block of groupingBlock) {
+            setPosition((prev) => ({
+              ...prev,
+              [block]: {
+                x: prev[block].x + event.delta.x,
+                y: prev[block].y + event.delta.y,
+              }}
+            ));
+          }
+        }
+        /* ブロック単体のエリア移動 */
+        else if((canDropToDropArea(droppable) || draggable === droppable)&& canDropToTimerBlockArea(position, draggable)) {
+          console.log("block drop to drop area");
+          setPosition((prev) => ({
+            ...prev,
+            [draggable]: {
+              x: prev[draggable].x + event.delta.x,
+              y: prev[draggable].y + event.delta.y,
+          }}));
+          // グループの中にあるブロックが移動されたらグループから削除
+          const hasKey = canRemoveTimerBlock(draggable);
+          if(hasKey) {
+            setGrouping((prev) => {
+              console.log("Before:", prev);
+              const { [hasKey]: _, ...rest } = prev;
+              console.log("rest", rest)
+              return rest;
+            });
+          }
+        // 単体ブロックがブロックにドロップされた時グループに追加・作成
+        } else if ( canDropToTimerBlock(position, draggable) && 
+                    !canDropToDropArea(droppable) && 
+                    isDifferenceDroppableDraggable(droppable, draggable)) { 
+          console.log('grouping');
+          const HIGHT = 50;
+          // draggableの座標を更新
+          setPosition((prev) => ({
+            ...prev,
+            [draggable]: {
+              x: prev[droppable].x,
+              y: prev[droppable].y + HIGHT,
+            }
+          }));
+          // groupingの更新
+          setGrouping((prev) => ({
+            ...prev,
+            [droppable] : prev[droppable] ? [...prev[droppable], draggable] : [draggable]
+          }));
+        }
+      }}>
         <DnDKitArea >
-          <BlockGroupDnD position={position.timer_1} />
+          <BlockGroupDnD id={'timer_1'} position={position.timer_1} />
+          <BlockGroupDnD id={'timer_2'} position={position.timer_2} />
+          <BlockGroupDnD id={'timer_3'} position={position.timer_3} />
         </DnDKitArea>
       </DndContext>
+
     </>
   );
 }
 
 export default App;
-
