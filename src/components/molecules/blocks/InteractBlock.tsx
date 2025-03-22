@@ -51,5 +51,22 @@ export const InteractBlock = (props:InteractBlockProps) => {
 				>
         </div>
     );
+
 }
+
+
+// export const InteractBlock = (props) => {
+// 	const [box, setBox] = useState<Box>({ top: 20, left: 20 });
+
+//     return (
+//         <div
+//             ref={interact.ref}
+//             style={{
+//                 ...interact.style,
+//                 border: '2px solid #0489B1',
+//                 backgroundColor: '#A9D0F5'
+//             }}>
+//         </div>
+//     );
+// }
 

@@ -4,9 +4,11 @@ import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
 import { TimeSelect } from "./components/molecules/TimeSelect";
 import { ShowTimer } from "./components/atoms/ShowTimer";
+
 import { DndContext } from "@dnd-kit/core";
 import { DnDKitArea } from "./components/molecules/DnDKitArea";
 import { BlockGroupDnD } from "./components/molecules/blocks/BlockGroupDnD";
+
 
 type TimeContextType = {
   totalSeconds: number;
@@ -35,6 +37,7 @@ function App() {
   const addBlock = () => {
     // setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
   };
+
 
   /**
    * タイマーをタイマーにドロップした時の判定
@@ -190,6 +193,7 @@ function App() {
           <BlockGroupDnD id={'timer_3'} position={position.timer_3} />
         </DnDKitArea>
       </DndContext>
+
     </>
   );
 }
