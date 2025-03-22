@@ -1,4 +1,4 @@
-import { useState, createContext } from "react";
+import { useState, createContext, useEffect } from "react";
 
 import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
@@ -61,16 +61,17 @@ function App() {
   };
 
 
-  const [parent, setParent] = useState(null);
   const [position, setPosition] = useState<{ [key: string]: { x: number; y: number } }>({
     'timer_1': { x: 50, y: 50 },
     'timer_2': { x: 100, y: 100 },
     'timer_3': { x: 150, y: 150 },
   });
-  const [grouping, setGrouping] = useState({
-    timer_1: ['timer_1'],
-    timer_3: ['timer_3'],
-  });
+  const [grouping, setGrouping] = useState<{ [key:string]: string[]}>({});
+
+  useEffect(() => {
+    console.log('position', position);
+    console.log('grouping', grouping);
+  }, [position, grouping]);
 
   return (
     <>
@@ -108,6 +109,12 @@ function App() {
               x: prev[droppable].x,
               y: prev[droppable].y + HIGHT,
             }
+          }));
+          // groupingの更新
+          setGrouping((prev) => ({
+            ...prev,
+            // [droppable]: [ ...prev[droppable], draggable],
+            [droppable] : prev[droppable] ? [...prev[droppable], draggable] : [draggable]
           }));
         }
       }}>
