@@ -109,31 +109,17 @@ function App() {
    */
   const handleDrag = (event) => {
     console.log('drag drag');
-    const droppable: string = event.over?.id as string;
     const draggable: string = event.active?.id as string;
 
     // グループがドラッグされた時
     if (canGroupDrag(draggable) ) {
       const groupingBlock : string[] = grouping[draggable];
       console.log('group drag');
-      // setPosition((prev) => ({
-      //   ...prev,
-      //   [draggable]: {
-      //     x: prev[draggable].x + event.delta.x,
-      //     y: prev[draggable].y + event.delta.y,
-      //   }}
-      // ));
       let changeX = event.delta.x - deltaX;
       let changeY = event.delta.y - deltaY;
 
-      setDeltaX((prev) => {
-        console.log("prev",prev);
-        console.log("event",event.delta.x)
-        return event.delta.x;
-      })
-      setDeltaY((prev) => {
-        return event.delta.y;
-      })
+      setDeltaX(event.delta.x);
+      setDeltaY(event.delta.y)
       for( const block of groupingBlock) {
         setPosition((prev) => ({
           ...prev,
@@ -143,37 +129,7 @@ function App() {
           }}
         ));
       }
-
-
-    } /* ブロック単体のエリア移動 */
-    else if(false && (canDropToDropArea(droppable) || draggable === droppable)&& canDropToTimerBlockArea(position, draggable)) {
-      console.log("block drop to drop area");
-      // console.log(event.delta.x)
-      
-      setPosition((prev) => ({
-        ...prev,
-        [draggable]: {
-          x: prev[draggable].x + deltaX,
-          y: prev[draggable].y + deltaY,
-      }}));
-        
-      setDeltaX((prev) => {
-        return event.delta.x - prev;
-      })
-      setDeltaY((prev) => {
-        return event.delta.y - prev;
-      })
-      // グループの中にあるブロックが移動されたらグループから削除
-      const hasKey = canRemoveTimerBlock(draggable);
-      if(hasKey) {
-        setGrouping((prev) => {
-          console.log("Before:", prev);
-          const { [hasKey]: _, ...rest } = prev;
-          console.log("rest", rest)
-          return rest;
-        });
-      }
-    }
+    } 
   }
   /**
    * ドロップハンドラ
@@ -195,15 +151,6 @@ function App() {
           y: prev[draggable].y + event.delta.y,
         }}
       ));
-      // for( const block of groupingBlock) {
-      //   setPosition((prev) => ({
-      //     ...prev,
-      //     [block]: {
-      //       x: prev[block].x + event.delta.x,
-      //       y: prev[block].y + event.delta.y,
-      //     }}
-      //   ));
-      // }
     }
     /* ブロック単体のエリア移動 */
     else if((canDropToDropArea(droppable) || draggable === droppable)&& canDropToTimerBlockArea(position, draggable)) {
@@ -231,26 +178,30 @@ function App() {
                 isDifferenceDroppableDraggable(droppable, draggable)) { 
       console.log('grouping');
       const HIGHT = 50;
+      // stateは即時反映ではないのでgroupの長さは別で考える
+      const groupLength = grouping[droppable] ? (grouping[droppable].length + 1) : 1
+      
+      // groupingの更新
+      setGrouping((prev) => ({
+        ...prev,
+        [droppable] : prev[droppable] ? [...prev[droppable], draggable] : [draggable]
+      }));
+
       // draggableの座標を更新
       setPosition((prev) => ({
         ...prev,
         [draggable]: {
           x: prev[droppable].x,
-          y: prev[droppable].y + HIGHT,
+          y: prev[droppable].y + groupLength * HIGHT,
         }
-      }));
-      // groupingの更新
-      setGrouping((prev) => ({
-        ...prev,
-        [droppable] : prev[droppable] ? [...prev[droppable], draggable] : [draggable]
       }));
     }
   }
 
   // postionやgroupingの変更を監視
   useEffect(() => {
-    // console.log('deltaX', deltaX);
-    // console.log('deltaY', deltaY);
+    console.log('deltaX', deltaX);
+    console.log('deltaY', deltaY);
     console.log('position', position);
     console.log('grouping', grouping);
   }, [position, grouping]);
