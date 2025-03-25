@@ -142,7 +142,6 @@ function App() {
     const draggable: string = event.active?.id as string;
     // グループがドラッグされた時
     if (canGroupDrag(draggable) ) {
-      const groupingBlock : string[] = grouping[draggable];
       console.log('group drag');
       setPosition((prev) => ({
         ...prev,
@@ -164,13 +163,30 @@ function App() {
       }}));
       // グループの中にあるブロックが移動されたらグループから削除
       const hasKey = canRemoveTimerBlock(draggable);
+
+      // グループを完全に解除するようになってる
       if(hasKey) {
-        setGrouping((prev) => {
-          console.log("Before:", prev);
-          const { [hasKey]: _, ...rest } = prev;
-          console.log("rest", rest)
-          return rest;
-        });
+        if(grouping[hasKey].length > 1) {
+          let newGroup = new Array();
+          setGrouping((prev) => {
+            const releaseBlockArray = prev[hasKey];
+            newGroup = releaseBlockArray.filter(id  => id !== draggable)
+            const { [hasKey]: _, ...rest } = prev;
+            return {
+              ...rest,
+              [hasKey]: newGroup,
+            };
+          });
+
+          setPosition
+
+
+        } else {          
+          setGrouping((prev) => {
+            const { [hasKey]: _, ...rest } = prev;
+            return rest;
+          });
+        }
       }
     // 単体ブロックがブロックにドロップされた時グループに追加・作成
     } else if ( canDropToTimerBlock(position, draggable) && 
