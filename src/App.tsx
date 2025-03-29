@@ -180,15 +180,6 @@ function App() {
                                                order: index + 1, // orderを1から始まるように再設定
                                              };
                                            });
-            // newGroupの中のorderで抜け板を詰めたい
-            // sortedGroup = newGroup.map((group, index) => {
-            //   console.log('group',group);
-            //   console.log(`Index: ${index}`); // indexを表示
-            //   return {
-            //     ...group,
-            //     order: index + 1, // orderを1から始まるように再設定
-            //   };
-            // });
             const topPositionY : number = position[hasKey].y
             // groupの中で今何板目なのかがほしいのでここでpositionを決める
             for(const group of sortedGroup) {
