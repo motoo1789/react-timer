@@ -158,7 +158,6 @@ function App() {
     /* ブロック単体のエリア移動 */
     else if((canDropToDropArea(droppable) || draggable === droppable)&& canDropToTimerBlockArea(position, draggable)) {
       console.log("block drop to drop area");
-      console.log(event.delta.x)
       setPosition((prev) => ({
         ...prev,
         [draggable]: {
@@ -167,25 +166,32 @@ function App() {
       }}));
       // グループの中にあるブロックが移動されたらグループから削除
       const hasKey = canRemoveTimerBlock(draggable);
-      console.log("cccccccccccccc", hasKey);
       // グループを完全に解除するようになってる
       if(hasKey) {
         if(grouping[hasKey].length > 1) {
-          console.log("bbbbbbbbbbbbbbbbb")
-          let newGroup: Grouping[] = [];
           let sortedGroup: Grouping[] = [];
           setGrouping((prev) => {
             const releaseBlockArray = prev[hasKey];
-            newGroup  = releaseBlockArray.filter(group  => group.id !== draggable)
+            // filterでdoraggableをグループから外してからorderの抜け番を詰める
+            sortedGroup = releaseBlockArray.filter(group  => group.id !== draggable)
+                                           .map((group, index) => {
+                                             return {
+                                               ...group,
+                                               order: index + 1, // orderを1から始まるように再設定
+                                             };
+                                           });
             // newGroupの中のorderで抜け板を詰めたい
-            sortedGroup = newGroup.map((group, index) => ({
-              ...group,
-              order: index + 1, // orderを1から始まるように再設定
-            }))
+            // sortedGroup = newGroup.map((group, index) => {
+            //   console.log('group',group);
+            //   console.log(`Index: ${index}`); // indexを表示
+            //   return {
+            //     ...group,
+            //     order: index + 1, // orderを1から始まるように再設定
+            //   };
+            // });
             const topPositionY : number = position[hasKey].y
             // groupの中で今何板目なのかがほしいのでここでpositionを決める
             for(const group of sortedGroup) {
-              console.log('aaaaaaaaaaaa',group.id)
               setPosition((prev) => ({
                   ...prev,
                   [group.id]: { x: prev[group.id].x, y: topPositionY * (group.order + 1) }
@@ -195,7 +201,7 @@ function App() {
             const { [hasKey]: _, ...rest } = prev;
             return {
               ...rest,
-              [hasKey]: newGroup,
+              [hasKey]: sortedGroup,
             };
           });
 
@@ -239,9 +245,9 @@ function App() {
 
   // postionやgroupingの変更を監視
   useEffect(() => {
-    console.log('deltaX', deltaX);
-    console.log('deltaY', deltaY);
-    console.log('position', position);
+    // console.log('deltaX', deltaX);
+    // console.log('deltaY', deltaY);
+    // console.log('position', position);
     console.log('grouping', grouping);
   }, [position, grouping]);
 
