@@ -34,10 +34,12 @@ function App() {
     'timer_1': { x: 50, y: 50 },
     'timer_2': { x: 100, y: 100 },
     'timer_3': { x: 200, y: 200 },
+    'timer_4': { x: 250, y: 250 },
   });
   const [grouping, setGrouping] = useState<{ [key: string]: Grouping[] }>({});
   const [deltaX, setDeltaX] = useState(0);
   const [deltaY, setDeltaY] = useState(0);
+  const HIGHT = 50;
 
   const addBlock = () => {
     // setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
@@ -75,7 +77,7 @@ function App() {
   };
 
   /**
-   * ドラッグされた要素がグループにあるか判定
+   * ドラッグされた要素がグループの親か判定
    * @param {string} draggable
    * @returns boolean
    */
@@ -89,9 +91,6 @@ function App() {
    * @returns boolean | string
    */
   const canRemoveTimerBlock = (draggable: string) => {
-    // for(const group of Object.values(grouping)) {
-    //   if(group.includes(draggable)) return true
-    // }
     for(const [key, value] of Object.entries(grouping)) {
       if(value.some(group => group.id === draggable)) return key;
     }
@@ -106,6 +105,20 @@ function App() {
    */
   const isDifferenceDroppableDraggable = (droppable: string, draggable: string) => {
     return droppable !== draggable;
+  }
+
+  const removeGrouping = (hasKey:string, draggable:string) => {
+    // groupが存在しないhasKeyがからになるのでチェック
+    if(!hasKey || !grouping[hasKey]) return [];
+
+    // filterでdoraggableをグループから外してからorderの抜け番を詰める
+    return grouping[hasKey].filter(group  => group.id !== draggable)
+                           .map((group, index) => {
+                             return {
+                               ...group,
+                               order: index + 1, // orderを1から始まるように再設定
+                             };
+                           });
   }
 
   /**
@@ -166,28 +179,27 @@ function App() {
       }}));
       // グループの中にあるブロックが移動されたらグループから削除
       const hasKey = canRemoveTimerBlock(draggable);
-      // グループを完全に解除するようになってる
+
       if(hasKey) {
         if(grouping[hasKey].length > 1) {
-          let sortedGroup: Grouping[] = [];
           setGrouping((prev) => {
-            const releaseBlockArray = prev[hasKey];
-            // filterでdoraggableをグループから外してからorderの抜け番を詰める
-            sortedGroup = releaseBlockArray.filter(group  => group.id !== draggable)
-                                           .map((group, index) => {
-                                             return {
-                                               ...group,
-                                               order: index + 1, // orderを1から始まるように再設定
-                                             };
-                                           });
-            const topPositionY : number = position[hasKey].y
-            // groupの中で今何板目なのかがほしいのでここでpositionを決める
-            for(const group of sortedGroup) {
-              setPosition((prev) => ({
-                  ...prev,
-                  [group.id]: { x: prev[group.id].x, y: topPositionY * (group.order + 1) }
-              }))
-            }
+            const sortedGroup : Grouping[] = removeGrouping(hasKey, draggable)
+            // グループが解除された時にあき番を詰め直す
+            setPosition((prev) => {
+              const updatedPositions = sortedGroup.reduce((acc, group) => {
+                const topPositionY: number = prev[hasKey].y;
+                acc[group.id] = {
+                  x: prev[group.id].x,
+                  y: topPositionY + HIGHT * group.order,
+                };
+                return acc;
+              }, {} as { [key: string]: { x: number; y: number } });
+            
+              return {
+                ...prev,
+                ...updatedPositions,
+              };
+            })
 
             const { [hasKey]: _, ...rest } = prev;
             return {
@@ -208,19 +220,49 @@ function App() {
                 !canDropToDropArea(droppable) && 
                 isDifferenceDroppableDraggable(droppable, draggable)) { 
       console.log('grouping');
-      const HIGHT = 50;
+      // グループ済みのブロックが同じグループに入らないようにするためのバリデーション
+      if(grouping[droppable]?.some((prev) => prev.id === draggable)) return ;
+
       // stateは即時反映ではないのでgroupの長さは別で考える
       const groupLength = grouping[droppable] ? (grouping[droppable].length + 1) : 1
       // groupingの更新
+      // もともとグループに入っていたブロックは削除して下のreturnで更新
+      const hasKey = canRemoveTimerBlock(draggable) || '';
+      const deletedDoroggableBlockPrevGroup : Grouping[] = removeGrouping(hasKey,draggable);
       setGrouping((prev) => {
         const newGroup : Grouping = {
           order: prev[droppable] ? prev[droppable].length + 1 : 1,
           id: draggable
         }
-        return { 
-          ...prev,
-          [droppable] : prev[droppable] ? [...prev[droppable], newGroup] : [newGroup]
+
+        if(deletedDoroggableBlockPrevGroup.length > 0) {
+          setPosition((prev) => {
+            const updatedPositions = deletedDoroggableBlockPrevGroup.reduce((acc, group) => {
+              const topPositionY: number = prev[hasKey].y;
+              acc[group.id] = {
+                x: prev[group.id].x,
+                y: topPositionY + HIGHT * group.order,
+              };
+              return acc;
+            }, {} as { [key: string]: { x: number; y: number } });
+          
+            return {
+              ...prev,
+              ...updatedPositions,
+            };
+          })
         }
+
+        // ブロックがremoveされた後に元のグループがからだったらそのキーを削除するための...rest
+        const { [hasKey]: _, ...rest } = prev;
+ 
+        return { 
+          ...(deletedDoroggableBlockPrevGroup.length === 0 ? rest : prev),
+          [droppable]: prev[droppable] ? [...prev[droppable], newGroup] : [newGroup], // これは必須
+          ...(hasKey && deletedDoroggableBlockPrevGroup.length > 0 && { 
+            [hasKey]: deletedDoroggableBlockPrevGroup, // 削除後のグループも更新
+          }),
+        };
       });
 
       // draggableの座標を更新
@@ -236,9 +278,10 @@ function App() {
 
   // postionやgroupingの変更を監視
   useEffect(() => {
+
     // console.log('deltaX', deltaX);
     // console.log('deltaY', deltaY);
-    // console.log('position', position);
+    console.log('position', position);
     console.log('grouping', grouping);
   }, [position, grouping]);
 
@@ -261,6 +304,7 @@ function App() {
           <BlockGroupDnD id={'timer_1'} position={position.timer_1} />
           <BlockGroupDnD id={'timer_2'} position={position.timer_2} />
           <BlockGroupDnD id={'timer_3'} position={position.timer_3} />
+          <BlockGroupDnD id={'timer_4'} position={position.timer_4} />
         </DnDKitArea>
       </DndContext>
 
