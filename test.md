@@ -1,3 +1,27 @@
+{
+    'timer_1' : {
+        top: 59,
+        left: 30,
+        child: []
+    },
+    'timer_2' : {
+        top: 50,
+        left: 220,
+        child: [
+            {
+                id: 'timer_3'
+                order: 1,
+            },
+            {
+                id: 'timer_4'
+                order: 2,
+            },
+        ]
+    }
+}
+
+//////
+
 import { useState, createContext, useEffect } from "react";
 
 import "./App.css";
@@ -8,11 +32,23 @@ import { ShowTimer } from "./components/atoms/ShowTimer";
 import { DndContext } from "@dnd-kit/core";
 import { DnDKitArea } from "./components/molecules/DnDKitArea";
 import { BlockGroupDnD } from "./components/molecules/blocks/BlockGroupDnD";
-import { TimerBlock } from "./components/molecules/blocks/TimerBlock";
-import { ParentChild, Position, Timer } from "./type";
 
+type TimerChild = {
+  id: string;
+  order: number;
+};
 
-// type Timers = Record<Timer>;
+type Position = {
+  top: number;
+  left: number;
+}
+
+type Timer = {
+  position: Position;
+  child: TimerChild[];
+};
+
+type Timers = Record<string, Timer>;
 
 
 type TimeContextType = {
@@ -29,52 +65,30 @@ type Grouping = {
   order: number,
   id: string
 }
-
-type Timers = {
-  [key: string]: Timer;
-};
 function App() {
-  const initialTimers: Timers = 
-  {
+  const initialTimers: Timers = {
     timer_1: {
-      position: {
-        top: 50,
-        left: 50,
-      },
-      parentChild: {
-        id: 'timer_1',
-        order: 0,
-      }
+        position: {
+          top: 40,
+          left: 20
+        },
+        child: []
     },
     timer_2: {
-      position: {
-        top: 50,
-        left: 50,
-      },
-      parentChild: {
-        id: 'timer_1',
-        order: 1,
-      } 
-    },
-    'timer_3': {
-      position: {
-        top: 150,
-        left: 150,
-      },
-      parentChild: {
-        id: 'timer_3',
-        order: 0,
-      }
-    },
-    'timer_4': {
-      position: {
-        top: 250,
-        left: 250,
-      },
-      parentChild: {
-        id: 'timer_4',
-        order: 0,
-      }
+        position: {
+          top: 100,
+          left: 100,
+        },
+        child: [
+            {
+                id: "timer_3",
+                order: 1,
+            },
+            {
+                id: "timer_4",
+                order: 2,
+            },
+        ]
     }
   };
   const [minute, setMinute] = useState(0);
@@ -82,12 +96,12 @@ function App() {
   const [showTimerColor, setShowTimerColor] = useState("black");
   const [totalSeconds, setTotalSeconds] = useState(0);
   const DROP_AREA = "DROP_AREA";
-  const [timers, setTimer] = useState<Timer[]>(initialTimers);
-  const [position, setPosition] = useState<{ [key: string]: { left: number; top: number } }>({
-    'timer_1': { left: 350, top: 50 },
-    'timer_2': { left: 350, top: 140 },
-    'timer_3': { left: 200, top: 200 },
-    'timer_4': { left: 250, top: 250 },
+  const [timers, setTimer] = useState<Timers>(initialTimers);
+  const [position, setPosition] = useState<{ [key: string]: { x: number; y: number } }>({
+    'timer_old_1': { x: 350, y: 50 },
+    'timer_old_2': { x: 350, y: 140 },
+    'timer_old_3': { x: 200, y: 200 },
+    'timer_old_4': { x: 250, y: 250 },
   });
   const [grouping, setGrouping] = useState<{ [key: string]: Grouping[] }>({});
   const [deltaX, setDeltaX] = useState(0);
@@ -356,11 +370,19 @@ function App() {
 
       <DndContext onDragMove={handleDrag} onDragEnd={handleDragEnd} >
         <DnDKitArea >
-        {
-          Object.entries(timers).map(([key, timer]) => (
-            <TimerBlock id={key} position={timer.position} parentChild={timer.parentChild} />
-          ))
-        }
+          
+          {
+            Object.entries(timers).map(([id, timer]) => (
+              <BlockGroupDnD id={'timer_old_1'} position={id.timer_old_1} />
+            ))
+          }
+
+          
+          <BlockGroupDnD id={'timer_old_1'} position={position.timer_old_1} />
+          <BlockGroupDnD id={'timer_old_2'} position={position.timer_old_2} />
+
+          <BlockGroupDnD id={'timer_1'} position={timers.timer_1.position} />
+          <BlockGroupDnD id={'timer_2'} position={timers.timer_2.position} />
 
         </DnDKitArea>
       </DndContext>
