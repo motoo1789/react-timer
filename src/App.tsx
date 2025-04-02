@@ -34,55 +34,31 @@ type Timers = {
   [key: string]: Timer;
 };
 function App() {
-  const initialTimers: Timers = 
-  {
+  const initialTimers: Timers = {
     timer_1: {
-      position: {
-        top: 50,
-        left: 50,
-      },
-      parentChild: {
-        id: 'timer_1',
-        order: 0,
-      }
+      position: { top: 50, left: 50,},
+      parentChild: { id: 'timer_1',order: 0,}
     },
     timer_2: {
-      position: {
-        top: 50,
-        left: 50,
-      },
-      parentChild: {
-        id: 'timer_1',
-        order: 1,
-      } 
+      position: {top: 50,left: 50,},
+      parentChild: {id: 'timer_1',order: 1,} 
     },
-    'timer_3': {
-      position: {
-        top: 150,
-        left: 150,
-      },
-      parentChild: {
-        id: 'timer_3',
-        order: 0,
-      }
+    timer_3: {
+      position: {top: 150,left: 150,},
+      parentChild: {id: 'timer_3',order: 0,}
     },
-    'timer_4': {
-      position: {
-        top: 250,
-        left: 250,
-      },
-      parentChild: {
-        id: 'timer_4',
-        order: 0,
-      }
+    timer_4: {
+      position: {top: 250,left: 250,},
+      parentChild: {id: 'timer_4',order: 0,}
     }
   };
+
   const [minute, setMinute] = useState(0);
   const [second, setSecond] = useState(0);
   const [showTimerColor, setShowTimerColor] = useState("black");
   const [totalSeconds, setTotalSeconds] = useState(0);
   const DROP_AREA = "DROP_AREA";
-  const [timers, setTimer] = useState<Timer[]>(initialTimers);
+  const [timers, setTimer] = useState<Timers>(initialTimers);
   const [position, setPosition] = useState<{ [key: string]: { left: number; top: number } }>({
     'timer_1': { left: 350, top: 50 },
     'timer_2': { left: 350, top: 140 },
@@ -223,14 +199,18 @@ function App() {
       ));
     }
     /* ブロック単体のエリア移動 */
-    else if((canDropToDropArea(droppable) || draggable === droppable)&& canDropToTimerBlockArea(position, draggable)) {
+    else if((canDropToDropArea(droppable) || draggable === droppable)) {
       console.log("block drop to drop area");
-      setPosition((prev) => ({
+      setTimer((prev) => ({
         ...prev,
         [draggable]: {
-          x: prev[draggable].x + event.delta.x,
-          y: prev[draggable].y + event.delta.y,
-      }}));
+          position: {
+            left: prev[draggable].position.left + event.delta.x,
+            top: prev[draggable].position.top + event.delta.y,
+          },
+          parentChild: prev[draggable].parentChild,
+        },
+      }));
       // グループの中にあるブロックが移動されたらグループから削除
       const hasKey = canRemoveTimerBlock(draggable);
 
