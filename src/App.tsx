@@ -111,7 +111,7 @@ function App() {
    * @returns boolean
    */
   const canGroupDrag = (draggable: string) => {
-    return Object.keys(grouping).includes(draggable);
+    return Object.keys(timers).includes(draggable);
   }
 
   /**
@@ -150,6 +150,20 @@ function App() {
                            });
   }
 
+  const updatePosition = (event, draggable:string) => {
+    return Object.entries(timers).filter(([key, value]) => value.parentChild.id === draggable)
+                                 .reduce((acc: Timers, [key, value]: [string, Timer]) => {
+                                    acc[key] = {
+                                      ...value,
+                                      position: {
+                                        left: value.position.left + event.delta.x,
+                                        top: value.position.top + event.delta.y,
+                                      },
+                                    }
+                                    return acc
+                                  }, {} as Timers);
+  }
+
   /**
    * ドラッグハンドラ
    */
@@ -159,23 +173,31 @@ function App() {
 
     // グループがドラッグされた時
     if (canGroupDrag(draggable) ) {
-      const groupingBlock : Grouping[] = grouping[draggable];
       console.log('group drag');
-      let changeX = event.delta.x - deltaX;
-      let changeY = event.delta.y - deltaY;
+      // let changeX = event.delta.x - deltaX;
+      // let changeY = event.delta.y - deltaY;
+      const parentLeft = timers[draggable].position.left + event.delta.x;
+      const parentTop = timers[draggable].position.top + event.delta.y;
 
       setDeltaX(event.delta.x);
       setDeltaY(event.delta.y)
-      // TODO: 直す、なにかエラーがあったら原因かも
-      for( const block of groupingBlock) {
-        setPosition((prev) => ({
-          ...prev,
-          [block.id]: {
-            x: prev[block.id].x + changeX,
-            y: prev[block.id].y + changeY,
-          }}
-        ));
-      }
+      const position = Object.entries(timers).filter(([id, value]) => value.parentChild.id === draggable)
+                                             .filter(([id, value]) => id !== draggable)    
+                                             .reduce((acc: Timers, [id, value]: [string, Timer]) => {
+                                                acc[id] = {
+                                                  ...value,
+                                                  position: {
+                                                    left: parentLeft,
+                                                    top: parentTop,
+                                                  },
+                                                }
+                                                return acc
+                                              }, {} as Timers);
+
+      setTimer((prev) => ({
+        ...prev,
+        ...position
+      }));
     } 
   }
   /**
@@ -190,13 +212,15 @@ function App() {
     // グループがドラッグされた時
     if (canGroupDrag(draggable) ) {
       console.log('group drag');
-      setPosition((prev) => ({
-        ...prev,
-        [draggable]: {
-          x: prev[draggable].x + event.delta.x,
-          y: prev[draggable].y + event.delta.y,
-        }}
-      ));
+      setTimer((prev) => {
+        const positions : Timers = updatePosition(event, draggable);
+        console.log("グループの移動", positions);
+        const {[draggable]: parent, ...rest} = positions;
+        return {
+          ...prev,
+          [draggable]: parent,
+        }
+      });
     }
     /* ブロック単体のエリア移動 */
     else if((canDropToDropArea(droppable) || draggable === droppable)) {
