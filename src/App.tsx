@@ -44,8 +44,8 @@ function App() {
       parentChild: {id: 'timer_1',order: 1,} 
     },
     timer_3: {
-      position: {top: 150,left: 150,},
-      parentChild: {id: 'timer_3',order: 0,}
+      position: {top: 50,left: 50,},
+      parentChild: {id: 'timer_1',order: 2,}
     },
     timer_4: {
       position: {top: 250,left: 250,},
@@ -111,6 +111,7 @@ function App() {
    * @returns boolean
    */
   const canGroupDrag = (draggable: string) => {
+    return timers[draggable].parentChild.id === draggable || false;
     return Object.keys(timers).includes(draggable);
   }
 
@@ -123,7 +124,7 @@ function App() {
     for(const [key, value] of Object.entries(grouping)) {
       if(value.some(group => group.id === draggable)) return key;
     }
-    return false;
+    return timers[draggable].parentChild.id !== draggable ? timers[draggable].parentChild.id : false;
   }
 
   /**
@@ -210,7 +211,7 @@ function App() {
     const droppable: string = event.over?.id as string;
     const draggable: string = event.active?.id as string;
     // グループがドラッグされた時
-    if (canGroupDrag(draggable) ) {
+    if (canGroupDrag(draggable)) {
       console.log('group drag');
       setTimer((prev) => {
         const positions : Timers = updatePosition(event, draggable);
@@ -236,9 +237,22 @@ function App() {
         },
       }));
       // グループの中にあるブロックが移動されたらグループから削除
-      const hasKey = canRemoveTimerBlock(draggable);
+      const groupID = canRemoveTimerBlock(draggable);
+      console.log('hasKey' , groupID)
 
-      if(hasKey) {
+      if(groupID) {
+        setTimer((prev) => {
+          const {[draggable]: remove, ...rest} = prev;
+          console.log('rest',rest)
+          const group = Object.entries(rest).filter(([key , timer]:[string, Timer]) => timer.parentChild.id === groupID)
+                                              .filter(([key, timer]:[string, Timer])  => key !== groupID);
+          console.log('group',group);
+          return {
+
+          }
+        })
+        // グループを取得
+
         if(grouping[hasKey].length > 1) {
           setGrouping((prev) => {
             const sortedGroup : Grouping[] = removeGrouping(hasKey, draggable)
