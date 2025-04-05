@@ -226,16 +226,7 @@ function App() {
     /* ブロック単体のエリア移動 */
     else if((canDropToDropArea(droppable) || draggable === droppable)) {
       console.log("block drop to drop area");
-      setTimer((prev) => ({
-        ...prev,
-        [draggable]: {
-          position: {
-            left: prev[draggable].position.left + event.delta.x,
-            top: prev[draggable].position.top + event.delta.y,
-          },
-          parentChild: prev[draggable].parentChild,
-        },
-      }));
+
       // グループの中にあるブロックが移動されたらグループから削除
       const groupID = canRemoveTimerBlock(draggable);
       console.log('hasKey' , groupID)
@@ -243,49 +234,52 @@ function App() {
       if(groupID) {
         setTimer((prev) => {
           const {[draggable]: remove, ...rest} = prev;
-          console.log('rest',rest)
+          // 抜けたTimerの穴埋め処理
+          const draggableOrder : number = remove.parentChild.order;
           const group = Object.entries(rest).filter(([key , timer]:[string, Timer]) => timer.parentChild.id === groupID)
-                                              .filter(([key, timer]:[string, Timer])  => key !== groupID);
-          console.log('group',group);
-          return {
+                                            .filter(([key, timer]:[string, Timer])  => key !== groupID);
+          const orderedGroup = group.filter(([key, timer]:[string, Timer]) => timer.parentChild.order > draggableOrder)
+                                    .reduce((acc: Timers, [id, timer]:[string, Timer]) => {
+                                      acc[id] = {
+                                        ...timer,
+                                        parentChild: {
+                                          ...timer.parentChild,
+                                          order: timer.parentChild.order - 1,
+                                        },
+                                      }
+                                      return acc
+                                    }, {} as Timers);
 
+          // ぬけたTimerの新しいグループ作成
+          const newGroupDraggableTimer = {
+            position: {
+              left: prev[draggable].position.left + event.delta.x,
+              top: HIGHT * prev[draggable].parentChild.order + prev[draggable].position.top + event.delta.y
+            },
+            parentChild: {
+              id: draggable,
+              order: 0,
+            },
+          }
+          return {
+            ...prev,
+            ...orderedGroup,
+            [draggable]: newGroupDraggableTimer,
           }
         })
-        // グループを取得
 
-        if(grouping[hasKey].length > 1) {
-          setGrouping((prev) => {
-            const sortedGroup : Grouping[] = removeGrouping(hasKey, draggable)
-            // グループが解除された時にあき番を詰め直す
-            setPosition((prev) => {
-              const updatedPositions = sortedGroup.reduce((acc, group) => {
-                const topPositionY: number = prev[hasKey].y;
-                acc[group.id] = {
-                  x: prev[group.id].x,
-                  y: topPositionY + HIGHT * group.order,
-                };
-                return acc;
-              }, {} as { [key: string]: { x: number; y: number } });
-            
-              return {
-                ...prev,
-                ...updatedPositions,
-              };
-            })
-
-            const { [hasKey]: _, ...rest } = prev;
-            return {
-              ...rest,
-              [hasKey]: sortedGroup,
-            };
-          });
-
-        } else {          
-          setGrouping((prev) => {
-            const { [hasKey]: _, ...rest } = prev;
-            return rest;
-          });
-        }
+      }
+      else {
+        setTimer((prev) => ({
+          ...prev,
+          [draggable]: {
+            position: {
+              left: prev[draggable].position.left + event.delta.x,
+              top: HIGHT * prev[draggable].parentChild.order + prev[draggable].position.top + event.delta.y ,
+            },
+            parentChild: prev[draggable].parentChild,
+          },
+        }));
       }
     // 単体ブロックがブロックにドロップされた時グループに追加・作成
     } else if ( canDropToTimerBlock(position, draggable) && 
@@ -353,8 +347,8 @@ function App() {
 
     // console.log('deltaX', deltaX);
     // console.log('deltaY', deltaY);
-    console.log('position', position);
-    console.log('grouping', grouping);
+    // console.log('position', position);
+    // console.log('grouping', grouping);
     console.log("timers", timers)
   }, [position, grouping]);
 
