@@ -40,7 +40,7 @@ function App() {
       parentChild: { id: "timer_1", order: 2 },
     },
     timer_4: {
-      position: { top: 250, left: 250 },
+      position: { top: 50, left: 250 },
       parentChild: { id: "timer_4", order: 0 },
     },
   };
@@ -119,13 +119,13 @@ function App() {
     draggable: string
   ): Timers => {
     return Object.entries(timers)
-      .filter(([key, value]) => value.parentChild.id === draggable)
-      .reduce((acc: Timers, [key, value]: [string, Timer]) => {
-        acc[key] = {
-          ...value,
+      .filter(([id, value]) => value.parentChild.id === draggable)
+      .reduce((acc: Timers, [id, timer]: [string, Timer]) => {
+        acc[id] = {
+          ...timer,
           position: {
-            left: value.position.left + event.delta.x,
-            top: value.position.top + event.delta.y,
+            left: timer.position.left + event.delta.x,
+            top: timer.position.top + event.delta.y,
           },
         };
         return acc;
@@ -270,12 +270,48 @@ function App() {
 				return;
 			}
 
+			// 穴埋めのための処理、droppableの親を探して最大のorderを取得
 			const parentId = timers[droppable].parentChild.id
 			const groupingOrders: number[] = Object.entries(timers)
 				.filter(([key, timer]: [string, Timer]) => timer.parentChild.id === parentId)
 				.map(([key, timer]: [string, Timer]) => timer.parentChild.order);
 			const maxOrder = Math.max(...groupingOrders);
 			console.log("grouping");
+
+			// draggableに子供がいる場合の処理
+      const droppableNewGroup: Timers = Object.entries(timers)
+				.filter(([id, timer]: [string, Timer]) => timer.parentChild.id === draggable)
+				.reduce((acc: Timers, [id, timer]: [string, Timer]) => {
+					acc[id] = {
+						...timer,
+						position: {
+							left: timers[droppable].position.left,
+							top: timers[droppable].position.top,
+						},
+						parentChild: {
+							id: parentId,
+							order: timer.parentChild.order + maxOrder + 1,
+						}
+					}
+					return acc;
+				}, {} as Timers);
+
+			// TODO:処理の分岐が良くない気がする
+			// draggableが子Timerの場合子供がいる場合の処理は行われないので
+			// droppableNewGroupにdraggableの要素が入らないここで入れる
+			// returnのところで直接書いてもいいけど2重の更新になる
+			if(!droppableNewGroup[draggable]){
+				droppableNewGroup[draggable] = {
+					position: {
+						left: timers[droppable].position.left,
+						top: timers[droppable].position.top,
+					},
+					parentChild: {
+						id: parentId,
+						order: maxOrder + 1,
+					}
+				}
+			}
 
 			setTimer((prev: Timers) => {
 				const groupId = canRemoveTimerBlock(draggable);
@@ -289,14 +325,8 @@ function App() {
 					...prev,
 					// 抜けたTimerの穴埋め処理
 					...orderedGroup,
-					// 新しいグループにいくdraggableの更新
-					[draggable]: {
-						position: {
-							left: prev[droppable].position.left,
-							top: prev[droppable].position.top,
-						},
-						parentChild: { id: parentId, order: maxOrder + 1 },
-					},
+					// draggableの子供を移動
+					...droppableNewGroup,
 				};
 			});
 		}
