@@ -211,7 +211,7 @@ function App() {
     const droppable: string = event.over?.id as string;
     const draggable: string = event.active?.id as string;
     // グループがドラッグされた時
-    if (canGroupDrag(draggable)) {
+    if (canGroupDrag(draggable) && (canDropToDropArea(droppable) || draggable === droppable)) {
       console.log('group drag');
       setTimer((prev) => {
         const positions : Timers = updatePosition(event, draggable);
@@ -281,76 +281,45 @@ function App() {
           },
         }));
       }
-    // 単体ブロックがブロックにドロップされた時グループに追加・作成
-    } else if ( canDropToTimerBlock(position, draggable) && 
+    // 単体ブロックがブロックにドロップされた時グループに追加
+
+    } else if ( canDropToTimerBlock(timers, draggable) && 
                 !canDropToDropArea(droppable) && 
                 isDifferenceDroppableDraggable(droppable, draggable)) { 
       console.log('grouping');
       // グループ済みのブロックが同じグループに入らないようにするためのバリデーション
-      if(grouping[droppable]?.some((prev) => prev.id === draggable)) return ;
+      if(draggable !== timers[draggable].parentChild.id) return ;
+      // if(grouping[droppable]?.some((prev) => prev.id === draggable)) return ;
+      const groupingOrders : number[] = Object.entries(timers).filter(([key , timer]:[string , Timer]) => timer.parentChild.id === droppable)
+                                                        .map(([key, timer]:[string , Timer]) => timer.parentChild.order)
+			const maxOrder = Math.max(...groupingOrders);
+																						 
 
       // stateは即時反映ではないのでgroupの長さは別で考える
-      const groupLength = grouping[droppable] ? (grouping[droppable].length + 1) : 1
-      // groupingの更新
-      // もともとグループに入っていたブロックは削除して下のreturnで更新
-      const hasKey = canRemoveTimerBlock(draggable) || '';
-      const deletedDoroggableBlockPrevGroup : Grouping[] = removeGrouping(hasKey,draggable);
-      setGrouping((prev) => {
-        const newGroup : Grouping = {
-          order: prev[droppable] ? prev[droppable].length + 1 : 1,
-          id: draggable
+      setTimer((prev) => {
+        return {
+          ...prev,
+          [draggable]: {
+            position: {
+              left: prev[droppable].position.left,
+              top: prev[droppable].position.top,
+            },
+            parentChild: {
+              id: droppable,
+              order: maxOrder + 1,
+            },
+          },
         }
-
-        if(deletedDoroggableBlockPrevGroup.length > 0) {
-          setPosition((prev) => {
-            const updatedPositions = deletedDoroggableBlockPrevGroup.reduce((acc, group) => {
-              const topPositionY: number = prev[hasKey].y;
-              acc[group.id] = {
-                x: prev[group.id].x,
-                y: topPositionY + HIGHT * group.order,
-              };
-              return acc;
-            }, {} as { [key: string]: { x: number; y: number } });
-          
-            return {
-              ...prev,
-              ...updatedPositions,
-            };
-          })
-        }
-
-        // ブロックがremoveされた後に元のグループがからだったらそのキーを削除するための...rest
-        const { [hasKey]: _, ...rest } = prev;
- 
-        return { 
-          ...(deletedDoroggableBlockPrevGroup.length === 0 ? rest : prev),
-          [droppable]: prev[droppable] ? [...prev[droppable], newGroup] : [newGroup], // これは必須
-          ...(hasKey && deletedDoroggableBlockPrevGroup.length > 0 && { 
-            [hasKey]: deletedDoroggableBlockPrevGroup, // 削除後のグループも更新
-          }),
-        };
-      });
-
-      // draggableの座標を更新
-      setPosition((prev) => ({
-        ...prev,
-        [draggable]: {
-          x: prev[droppable].x,
-          y: prev[droppable].y + groupLength * HIGHT,
-        }
-      }));
+      })
     }
   }
 
   // postionやgroupingの変更を監視
   useEffect(() => {
-
     // console.log('deltaX', deltaX);
     // console.log('deltaY', deltaY);
-    // console.log('position', position);
-    // console.log('grouping', grouping);
     console.log("timers", timers)
-  }, [position, grouping]);
+  }, [timers]);
 
   return (
     <>
