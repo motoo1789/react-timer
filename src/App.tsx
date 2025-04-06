@@ -134,6 +134,22 @@ function App() {
                                   }, {} as Timers);
   }
 
+	const orderRemoveGroup = (remove: Timer, rest:Timers, groupId: string) => {
+		const draggableOrder : number = remove.parentChild.order;
+		const group = Object.entries(rest).filter(([key , timer]:[string, Timer]) => timer.parentChild.id === groupId)
+																			.filter(([key, timer]:[string, Timer])  => key !== groupId);
+		return group.filter(([key, timer]:[string, Timer]) => timer.parentChild.order > draggableOrder)
+								.reduce((acc: Timers, [id, timer]:[string, Timer]) => {
+									acc[id] = {
+										...timer,
+										parentChild: {
+											...timer.parentChild,
+											order: timer.parentChild.order - 1,
+										},
+									}
+									return acc
+								}, {} as Timers);
+	}
   /**
    * ドラッグハンドラ
    */
@@ -183,7 +199,7 @@ function App() {
       setTimer((prev) => {
         const positions : Timers = updatePosition(event, draggable);
         console.log("グループの移動", positions);
-        const {[draggable]: parent, ...rest} = positions;
+        const {[draggable]: parent} = positions;
         return {
           ...prev,
           [draggable]: parent,
@@ -191,70 +207,39 @@ function App() {
       });
     }
     /* ブロック単体のエリア移動 */
-    else if((canDropToDropArea(droppable) || draggable === droppable)) {
+    else if((canDropToDropArea(droppable))) {
       console.log("block drop to drop area");
 
       // グループの中にあるブロックが移動されたらグループから削除
-      const groupID = canRemoveTimerBlock(draggable);
-      console.log('hasKey' , groupID)
+      const groupId = canRemoveTimerBlock(draggable);
+      console.log('parent' , groupId)
 
-      if(groupID) {
         setTimer((prev) => {
           const {[draggable]: remove, ...rest} = prev;
           // 抜けたTimerの穴埋め処理
-          const draggableOrder : number = remove.parentChild.order;
-          const group = Object.entries(rest).filter(([key , timer]:[string, Timer]) => timer.parentChild.id === groupID)
-                                            .filter(([key, timer]:[string, Timer])  => key !== groupID);
-          const orderedGroup = group.filter(([key, timer]:[string, Timer]) => timer.parentChild.order > draggableOrder)
-                                    .reduce((acc: Timers, [id, timer]:[string, Timer]) => {
-                                      acc[id] = {
-                                        ...timer,
-                                        parentChild: {
-                                          ...timer.parentChild,
-                                          order: timer.parentChild.order - 1,
-                                        },
-                                      }
-                                      return acc
-                                    }, {} as Timers);
+          const orderedGroup = groupId ? orderRemoveGroup(remove, rest, groupId) : {};
 
-          // ぬけたTimerの新しいグループ作成
-          const newGroupDraggableTimer = {
-            position: {
-              left: prev[draggable].position.left + event.delta.x,
-              top: HIGHT * prev[draggable].parentChild.order + prev[draggable].position.top + event.delta.y
-            },
-            parentChild: {
-              id: draggable,
-              order: 0,
-            },
-          }
           return {
             ...prev,
             ...orderedGroup,
-            [draggable]: newGroupDraggableTimer,
+            [draggable]: {
+							position:{
+								left: prev[draggable].position.left + event.delta.x,
+								top: HIGHT * prev[draggable].parentChild.order + prev[draggable].position.top + event.delta.y
+							},
+              parentChild: { id: draggable, order: 0 }
+						},
           }
         })
-
-      }
-      else {
-        setTimer((prev) => ({
-          ...prev,
-          [draggable]: {
-            position: {
-              left: prev[draggable].position.left + event.delta.x,
-              top: HIGHT * prev[draggable].parentChild.order + prev[draggable].position.top + event.delta.y ,
-            },
-            parentChild: prev[draggable].parentChild,
-          },
-        }));
-      }
+      
     // 単体ブロックがブロックにドロップされた時グループに追加
-
     } else if ( canDropToTimerBlock(timers, draggable) && 
                 !canDropToDropArea(droppable) && 
                 isDifferenceDroppableDraggable(droppable, draggable)) { 
 			// 親は子供の親にならない
 			if(timers[droppable].parentChild.id === draggable) {
+				// 親が子要素のグループになる判定がなぜか怒るがそれは良くない
+				// グループのドラッグ移動自体はしたいのでsetTimerして他の処理はしない
 				console.log("親は子供の親にならない"); 
 				setTimer((prev) => ({
 					...prev,
@@ -271,25 +256,33 @@ function App() {
 
       console.log('grouping');
       // グループ済みのブロックが同じグループに入らないようにするためのバリデーション
-      if(draggable !== timers[draggable].parentChild.id) return ;
-      // if(grouping[droppable]?.some((prev) => prev.id === draggable)) return ;
+      if(droppable === timers[draggable].parentChild.id) {
+				console.log("グループ済みのブロックは同じグループになれない");
+				return ;
+			}
+
       const groupingOrders : number[] = Object.entries(timers).filter(([key , timer]:[string , Timer]) => timer.parentChild.id === droppable)
-                                                        .map(([key, timer]:[string , Timer]) => timer.parentChild.order)
+																							.map(([key, timer]:[string , Timer]) => timer.parentChild.order)
 			const maxOrder = Math.max(...groupingOrders);
-																						 
-      // stateは即時反映ではないのでgroupの長さは別で考える
+      console.log('grouping');
+
       setTimer((prev) => {
+				const groupId = canRemoveTimerBlock(draggable);
+				const {[draggable]: remove, ...rest} = prev;
+				// 抜けたTimerの穴埋め処理
+				const orderedGroup = groupId ? orderRemoveGroup(remove, rest, groupId) : {};
+
         return {
           ...prev,
+					// 抜けたTimerの穴埋め処理
+					...orderedGroup,
+					// 新しいグループにいくdraggableの更新
           [draggable]: {
             position: {
               left: prev[droppable].position.left,
               top: prev[droppable].position.top,
             },
-            parentChild: {
-              id: droppable,
-              order: maxOrder + 1,
-            },
+            parentChild: { id: droppable, order: maxOrder + 1 },
           },
         }
       })
