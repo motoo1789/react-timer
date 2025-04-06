@@ -7,7 +7,6 @@ import { ShowTimer } from "./components/atoms/ShowTimer";
 
 import { DndContext } from "@dnd-kit/core";
 import { DnDKitArea } from "./components/molecules/DnDKitArea";
-import { BlockGroupDnD } from "./components/molecules/blocks/BlockGroupDnD";
 import { TimerBlock } from "./components/molecules/blocks/TimerBlock";
 import { ParentChild, Position, Timer } from "./type";
 
@@ -74,18 +73,6 @@ function App() {
     // setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
   };
 
-
-  /**
-   * タイマーをタイマーにドロップした時の判定
-   * タイマーがグループにドロップされた時の判定
-   * @param {string} droppable : string
-   * @param {string} droggables : object
-   * @returns boolean
-   */
-  const canDropToTimerBlockArea = (droggables: object, droppble:string) => {
-    return Object.keys(droggables).includes(droppble); 
-  };
-
   /**
    * タイマーをタイマーにドロップした時の判定
    * @param {string} droppable : string
@@ -112,7 +99,6 @@ function App() {
    */
   const canGroupDrag = (draggable: string) => {
     return timers[draggable].parentChild.id === draggable || false;
-    return Object.keys(timers).includes(draggable);
   }
 
   /**
@@ -121,9 +107,6 @@ function App() {
    * @returns boolean | string
    */
   const canRemoveTimerBlock = (draggable: string) => {
-    for(const [key, value] of Object.entries(grouping)) {
-      if(value.some(group => group.id === draggable)) return key;
-    }
     return timers[draggable].parentChild.id !== draggable ? timers[draggable].parentChild.id : false;
   }
 
@@ -135,20 +118,6 @@ function App() {
    */
   const isDifferenceDroppableDraggable = (droppable: string, draggable: string) => {
     return droppable !== draggable;
-  }
-
-  const removeGrouping = (hasKey:string, draggable:string) => {
-    // groupが存在しないhasKeyがからになるのでチェック
-    if(!hasKey || !grouping[hasKey]) return [];
-
-    // filterでdoraggableをグループから外してからorderの抜け番を詰める
-    return grouping[hasKey].filter(group  => group.id !== draggable)
-                           .map((group, index) => {
-                             return {
-                               ...group,
-                               order: index + 1, // orderを1から始まるように再設定
-                             };
-                           });
   }
 
   const updatePosition = (event, draggable:string) => {
@@ -175,8 +144,6 @@ function App() {
     // グループがドラッグされた時
     if (canGroupDrag(draggable) ) {
       console.log('group drag');
-      // let changeX = event.delta.x - deltaX;
-      // let changeY = event.delta.y - deltaY;
       const parentLeft = timers[draggable].position.left + event.delta.x;
       const parentTop = timers[draggable].position.top + event.delta.y;
 
@@ -310,7 +277,6 @@ function App() {
                                                         .map(([key, timer]:[string , Timer]) => timer.parentChild.order)
 			const maxOrder = Math.max(...groupingOrders);
 																						 
-
       // stateは即時反映ではないのでgroupの長さは別で考える
       setTimer((prev) => {
         return {
@@ -358,7 +324,6 @@ function App() {
             <TimerBlock id={key} position={timer.position} parentChild={timer.parentChild} />
           ))
         }
-
         </DnDKitArea>
       </DndContext>
 
