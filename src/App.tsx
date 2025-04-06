@@ -270,8 +270,9 @@ function App() {
 				return;
 			}
 
+			const parentId = timers[droppable].parentChild.id
 			const groupingOrders: number[] = Object.entries(timers)
-				.filter(([key, timer]: [string, Timer]) => timer.parentChild.id === droppable)
+				.filter(([key, timer]: [string, Timer]) => timer.parentChild.id === parentId)
 				.map(([key, timer]: [string, Timer]) => timer.parentChild.order);
 			const maxOrder = Math.max(...groupingOrders);
 			console.log("grouping");
@@ -294,7 +295,7 @@ function App() {
 							left: prev[droppable].position.left,
 							top: prev[droppable].position.top,
 						},
-						parentChild: { id: droppable, order: maxOrder + 1 },
+						parentChild: { id: parentId, order: maxOrder + 1 },
 					},
 				};
 			});
