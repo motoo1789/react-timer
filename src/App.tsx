@@ -286,6 +286,22 @@ function App() {
     } else if ( canDropToTimerBlock(timers, draggable) && 
                 !canDropToDropArea(droppable) && 
                 isDifferenceDroppableDraggable(droppable, draggable)) { 
+			// 親は子供の親にならない
+			if(timers[droppable].parentChild.id === draggable) {
+				console.log("親は子供の親にならない"); 
+				setTimer((prev) => ({
+					...prev,
+					[draggable]: {
+						...prev[draggable],
+						position: {
+							left: prev[droppable].position.left,
+							top: prev[droppable].position.top,
+						},
+					},
+				}));
+				return ;
+			}
+
       console.log('grouping');
       // グループ済みのブロックが同じグループに入らないようにするためのバリデーション
       if(draggable !== timers[draggable].parentChild.id) return ;
