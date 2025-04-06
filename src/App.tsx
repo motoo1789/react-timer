@@ -5,10 +5,12 @@ import { TimerState } from "./components/molecules/TimerState";
 import { TimeSelect } from "./components/molecules/TimeSelect";
 import { ShowTimer } from "./components/atoms/ShowTimer";
 
-import { DndContext } from "@dnd-kit/core";
+import { DndContext , DragEndEvent, DragMoveEvent} from "@dnd-kit/core";
 import { DnDKitArea } from "./components/molecules/DnDKitArea";
-import { BlockGroupDnD } from "./components/molecules/blocks/BlockGroupDnD";
+import { TimerBlock } from "./components/molecules/blocks/TimerBlock";
+import { ParentChild, Position, Timer } from "./type";
 
+// type Timers = Record<Timer>;
 
 type TimeContextType = {
   totalSeconds: number;
@@ -20,56 +22,54 @@ export const TimeContext = createContext<TimeContextType>({
   setTotalSeconds: () => {},
 });
 
-type Grouping = {
-  order: number,
-  id: string
-}
+type Timers = {
+  [key: string]: Timer;
+};
 function App() {
+  const initialTimers: Timers = {
+    timer_1: {
+      position: { top: 50, left: 50 },
+      parentChild: { id: "timer_1", order: 0 },
+    },
+    timer_2: {
+      position: { top: 50, left: 50 },
+      parentChild: { id: "timer_1", order: 1 },
+    },
+    timer_3: {
+      position: { top: 50, left: 50 },
+      parentChild: { id: "timer_1", order: 2 },
+    },
+    timer_4: {
+      position: { top: 250, left: 250 },
+      parentChild: { id: "timer_4", order: 0 },
+    },
+  };
+
   const [minute, setMinute] = useState(0);
   const [second, setSecond] = useState(0);
   const [showTimerColor, setShowTimerColor] = useState("black");
   const [totalSeconds, setTotalSeconds] = useState(0);
   const DROP_AREA = "DROP_AREA";
-  const [position, setPosition] = useState<{ [key: string]: { x: number; y: number } }>({
-    'timer_1': { x: 50, y: 50 },
-    'timer_2': { x: 100, y: 100 },
-    'timer_3': { x: 200, y: 200 },
-    'timer_4': { x: 250, y: 250 },
-  });
-  const [grouping, setGrouping] = useState<{ [key: string]: Grouping[] }>({});
-  const [deltaX, setDeltaX] = useState(0);
-  const [deltaY, setDeltaY] = useState(0);
+  const [timers, setTimer] = useState<Timers>(initialTimers);
   const HIGHT = 50;
 
   const addBlock = () => {
     // setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
   };
 
-
   /**
    * タイマーをタイマーにドロップした時の判定
-   * タイマーがグループにドロップされた時の判定
    * @param {string} droppable : string
    * @param {string} droggables : object
    * @returns boolean
    */
-  const canDropToTimerBlockArea = (droggables: object, droppble:string) => {
-    return Object.keys(droggables).includes(droppble); 
+  const canDropToTimerBlock = (droppbles: object, droggables: string) => {
+    return Object.keys(droppbles).includes(droggables);
   };
 
   /**
-   * タイマーをタイマーにドロップした時の判定
-   * @param {string} droppable : string
-   * @param {string} droggables : object
-   * @returns boolean
-   */
-    const canDropToTimerBlock = (droppbles: object, droggables:string) => {
-      return Object.keys(droppbles).includes(droggables); 
-    };
-
-  /**
    * ドロップエリアにドロップされたか判定
-   * @param {string} droppable 
+   * @param {string} droppable
    * @returns boolean
    */
   const canDropToDropArea = (droppble: string) => {
@@ -82,8 +82,8 @@ function App() {
    * @returns boolean
    */
   const canGroupDrag = (draggable: string) => {
-    return Object.keys(grouping).includes(draggable);
-  }
+    return timers[draggable].parentChild.id === draggable || false;
+  };
 
   /**
    * ドラッグされた要素がグループにあるか判定
@@ -91,199 +91,220 @@ function App() {
    * @returns boolean | string
    */
   const canRemoveTimerBlock = (draggable: string) => {
-    for(const [key, value] of Object.entries(grouping)) {
-      if(value.some(group => group.id === draggable)) return key;
-    }
-    return false;
-  }
+    return timers[draggable].parentChild.id !== draggable
+      ? timers[draggable].parentChild.id
+      : false;
+  };
 
   /**
    * droppableとdraggableが違う判定
-   * @param {string} droppable 
+   * @param {string} droppable
    * @param {string} draggable
    * @returns boolean
    */
-  const isDifferenceDroppableDraggable = (droppable: string, draggable: string) => {
+  const isDifferenceDroppableDraggable = (
+    droppable: string,
+    draggable: string
+  ) => {
     return droppable !== draggable;
-  }
+  };
+  /**
+   * ドラッグした位置を更新
+   * @param {UpdatePositionEvent}
+   * @param {string} draggable
+   * @returns {Timers}
+   **/
+  const updatePosition = (
+    event: DragEndEvent,
+    draggable: string
+  ): Timers => {
+    return Object.entries(timers)
+      .filter(([key, value]) => value.parentChild.id === draggable)
+      .reduce((acc: Timers, [key, value]: [string, Timer]) => {
+        acc[key] = {
+          ...value,
+          position: {
+            left: value.position.left + event.delta.x,
+            top: value.position.top + event.delta.y,
+          },
+        };
+        return acc;
+      }, {} as Timers);
+  };
 
-  const removeGrouping = (hasKey:string, draggable:string) => {
-    // groupが存在しないhasKeyがからになるのでチェック
-    if(!hasKey || !grouping[hasKey]) return [];
-
-    // filterでdoraggableをグループから外してからorderの抜け番を詰める
-    return grouping[hasKey].filter(group  => group.id !== draggable)
-                           .map((group, index) => {
-                             return {
-                               ...group,
-                               order: index + 1, // orderを1から始まるように再設定
-                             };
-                           });
-  }
-
+  const orderRemoveGroup = (remove: Timer, rest: Timers, groupId: string) => {
+    const draggableOrder: number = remove.parentChild.order;
+    const group = Object.entries(rest)
+      .filter(
+        ([key, timer]: [string, Timer]) => timer.parentChild.id === groupId
+      )
+      .filter(([key, timer]: [string, Timer]) => key !== groupId);
+    return group
+      .filter(
+        ([key, timer]: [string, Timer]) =>
+          timer.parentChild.order > draggableOrder
+      )
+      .reduce((acc: Timers, [id, timer]: [string, Timer]) => {
+        acc[id] = {
+          ...timer,
+          parentChild: {
+            ...timer.parentChild,
+            order: timer.parentChild.order - 1,
+          },
+        };
+        return acc;
+      }, {} as Timers);
+  };
   /**
    * ドラッグハンドラ
    */
-  const handleDrag = (event) => {
-    console.log('drag drag');
-    const draggable: string = event.active?.id as string;
+	const handleDrag = (event: DragMoveEvent): void => {
+		console.log("drag drag");
+		const draggable: string = event.active?.id as string;
 
-    // グループがドラッグされた時
-    if (canGroupDrag(draggable) ) {
-      const groupingBlock : Grouping[] = grouping[draggable];
-      console.log('group drag');
-      let changeX = event.delta.x - deltaX;
-      let changeY = event.delta.y - deltaY;
+		// グループがドラッグされた時
+		if (canGroupDrag(draggable)) {
+			console.log("group drag");
+			const parentLeft: number = timers[draggable].position.left + event.delta.x;
+			const parentTop: number = timers[draggable].position.top + event.delta.y;
+			const position: Timers = Object.entries(timers)
+				.filter(([id, value]: [string, Timer]) => value.parentChild.id === draggable)
+				.filter(([id, value]: [string, Timer]) => id !== draggable)
+				.reduce((acc: Timers, [id, value]: [string, Timer]) => {
+					acc[id] = {
+						...value,
+						position: {
+							left: parentLeft,
+							top: parentTop,
+						},
+					};
+					return acc;
+				}, {} as Timers);
 
-      setDeltaX(event.delta.x);
-      setDeltaY(event.delta.y)
-      for( const block of groupingBlock) {
-        setPosition((prev) => ({
-          ...prev,
-          [block.id]: {
-            x: prev[block.id].x + changeX,
-            y: prev[block.id].y + changeY,
-          }}
-        ));
-      }
-    } 
-  }
+			setTimer((prev: Timers) => ({
+				...prev,
+				...position,
+			}));
+		}
+	};
   /**
    * ドロップハンドラ
    */
-  const handleDragEnd = (event) =>{
-    setDeltaX(0);
-    setDeltaY(0);
+	const handleDragEnd = (event: DragEndEvent): void => {
+		const droppable: string = event.over?.id as string;
+		const draggable: string = event.active?.id as string;
+		// グループがドラッグされた時
+		if (
+			canGroupDrag(draggable) &&
+			(canDropToDropArea(droppable) || draggable === droppable)
+		) {
+			console.log("group drag");
+			setTimer((prev: Timers) => {
+				const positions: Timers = updatePosition(event, draggable);
+				console.log("グループの移動", positions);
+				const { [draggable]: parent } = positions;
+				return {
+					...prev,
+					[draggable]: parent,
+				};
+			});
+		} else if (canDropToDropArea(droppable)) {
+			/* ブロック単体のエリア移動 */
+			console.log("block drop to drop area");
 
-    const droppable: string = event.over?.id as string;
-    const draggable: string = event.active?.id as string;
-    // グループがドラッグされた時
-    if (canGroupDrag(draggable) ) {
-      console.log('group drag');
-      setPosition((prev) => ({
-        ...prev,
-        [draggable]: {
-          x: prev[draggable].x + event.delta.x,
-          y: prev[draggable].y + event.delta.y,
-        }}
-      ));
-    }
-    /* ブロック単体のエリア移動 */
-    else if((canDropToDropArea(droppable) || draggable === droppable)&& canDropToTimerBlockArea(position, draggable)) {
-      console.log("block drop to drop area");
-      setPosition((prev) => ({
-        ...prev,
-        [draggable]: {
-          x: prev[draggable].x + event.delta.x,
-          y: prev[draggable].y + event.delta.y,
-      }}));
-      // グループの中にあるブロックが移動されたらグループから削除
-      const hasKey = canRemoveTimerBlock(draggable);
+			// グループの中にあるブロックが移動されたらグループから削除
+			const groupId = canRemoveTimerBlock(draggable);
+			console.log("parent", groupId);
 
-      if(hasKey) {
-        if(grouping[hasKey].length > 1) {
-          setGrouping((prev) => {
-            const sortedGroup : Grouping[] = removeGrouping(hasKey, draggable)
-            // グループが解除された時にあき番を詰め直す
-            setPosition((prev) => {
-              const updatedPositions = sortedGroup.reduce((acc, group) => {
-                const topPositionY: number = prev[hasKey].y;
-                acc[group.id] = {
-                  x: prev[group.id].x,
-                  y: topPositionY + HIGHT * group.order,
-                };
-                return acc;
-              }, {} as { [key: string]: { x: number; y: number } });
-            
-              return {
-                ...prev,
-                ...updatedPositions,
-              };
-            })
+			setTimer((prev: Timers) => {
+				const { [draggable]: remove, ...rest } = prev;
+				// 抜けたTimerの穴埋め処理
+				const orderedGroup = groupId
+					? orderRemoveGroup(remove, rest, groupId)
+					: {};
 
-            const { [hasKey]: _, ...rest } = prev;
-            return {
-              ...rest,
-              [hasKey]: sortedGroup,
-            };
-          });
+				return {
+					...prev,
+					...orderedGroup,
+					[draggable]: {
+						position: {
+							left: prev[draggable].position.left + event.delta.x,
+							top:
+								HIGHT * prev[draggable].parentChild.order +
+								prev[draggable].position.top +
+								event.delta.y,
+						},
+						parentChild: { id: draggable, order: 0 },
+					},
+				};
+			});
 
-        } else {          
-          setGrouping((prev) => {
-            const { [hasKey]: _, ...rest } = prev;
-            return rest;
-          });
-        }
-      }
-    // 単体ブロックがブロックにドロップされた時グループに追加・作成
-    } else if ( canDropToTimerBlock(position, draggable) && 
-                !canDropToDropArea(droppable) && 
-                isDifferenceDroppableDraggable(droppable, draggable)) { 
-      console.log('grouping');
-      // グループ済みのブロックが同じグループに入らないようにするためのバリデーション
-      if(grouping[droppable]?.some((prev) => prev.id === draggable)) return ;
+			// 単体ブロックがブロックにドロップされた時グループに追加
+		} else if (
+			canDropToTimerBlock(timers, draggable) &&
+			!canDropToDropArea(droppable) &&
+			isDifferenceDroppableDraggable(droppable, draggable)
+		) {
+			// 親は子供の親にならない
+			if (timers[droppable].parentChild.id === draggable) {
+				// 親が子要素のグループになる判定がなぜか怒るがそれは良くない
+				// グループのドラッグ移動自体はしたいのでsetTimerして他の処理はしない
+				console.log("親は子供の親にならない");
+				setTimer((prev: Timers) => ({
+					...prev,
+					[draggable]: {
+						...prev[draggable],
+						position: {
+							left: prev[droppable].position.left,
+							top: prev[droppable].position.top,
+						},
+					},
+				}));
+				return;
+			}
 
-      // stateは即時反映ではないのでgroupの長さは別で考える
-      const groupLength = grouping[droppable] ? (grouping[droppable].length + 1) : 1
-      // groupingの更新
-      // もともとグループに入っていたブロックは削除して下のreturnで更新
-      const hasKey = canRemoveTimerBlock(draggable) || '';
-      const deletedDoroggableBlockPrevGroup : Grouping[] = removeGrouping(hasKey,draggable);
-      setGrouping((prev) => {
-        const newGroup : Grouping = {
-          order: prev[droppable] ? prev[droppable].length + 1 : 1,
-          id: draggable
-        }
+			console.log("grouping");
+			// グループ済みのブロックが同じグループに入らないようにするためのバリデーション
+			if (droppable === timers[draggable].parentChild.id) {
+				console.log("グループ済みのブロックは同じグループになれない");
+				return;
+			}
 
-        if(deletedDoroggableBlockPrevGroup.length > 0) {
-          setPosition((prev) => {
-            const updatedPositions = deletedDoroggableBlockPrevGroup.reduce((acc, group) => {
-              const topPositionY: number = prev[hasKey].y;
-              acc[group.id] = {
-                x: prev[group.id].x,
-                y: topPositionY + HIGHT * group.order,
-              };
-              return acc;
-            }, {} as { [key: string]: { x: number; y: number } });
-          
-            return {
-              ...prev,
-              ...updatedPositions,
-            };
-          })
-        }
+			const groupingOrders: number[] = Object.entries(timers)
+				.filter(([key, timer]: [string, Timer]) => timer.parentChild.id === droppable)
+				.map(([key, timer]: [string, Timer]) => timer.parentChild.order);
+			const maxOrder = Math.max(...groupingOrders);
+			console.log("grouping");
 
-        // ブロックがremoveされた後に元のグループがからだったらそのキーを削除するための...rest
-        const { [hasKey]: _, ...rest } = prev;
- 
-        return { 
-          ...(deletedDoroggableBlockPrevGroup.length === 0 ? rest : prev),
-          [droppable]: prev[droppable] ? [...prev[droppable], newGroup] : [newGroup], // これは必須
-          ...(hasKey && deletedDoroggableBlockPrevGroup.length > 0 && { 
-            [hasKey]: deletedDoroggableBlockPrevGroup, // 削除後のグループも更新
-          }),
-        };
-      });
+			setTimer((prev: Timers) => {
+				const groupId = canRemoveTimerBlock(draggable);
+				const { [draggable]: remove, ...rest } = prev;
+				// 抜けたTimerの穴埋め処理
+				const orderedGroup = groupId
+					? orderRemoveGroup(remove, rest, groupId)
+					: {};
 
-      // draggableの座標を更新
-      setPosition((prev) => ({
-        ...prev,
-        [draggable]: {
-          x: prev[droppable].x,
-          y: prev[droppable].y + groupLength * HIGHT,
-        }
-      }));
-    }
-  }
+				return {
+					...prev,
+					// 抜けたTimerの穴埋め処理
+					...orderedGroup,
+					// 新しいグループにいくdraggableの更新
+					[draggable]: {
+						position: {
+							left: prev[droppable].position.left,
+							top: prev[droppable].position.top,
+						},
+						parentChild: { id: droppable, order: maxOrder + 1 },
+					},
+				};
+			});
+		}
+	};
 
   // postionやgroupingの変更を監視
   useEffect(() => {
-
-    // console.log('deltaX', deltaX);
-    // console.log('deltaY', deltaY);
-    console.log('position', position);
-    console.log('grouping', grouping);
-  }, [position, grouping]);
+    console.log("timers", timers);
+  }, [timers]);
 
   return (
     <>
@@ -299,18 +320,19 @@ function App() {
 
       <button onClick={addBlock}>ブロックを追加</button>
 
-      <DndContext onDragMove={handleDrag} onDragEnd={handleDragEnd} >
-        <DnDKitArea >
-          <BlockGroupDnD id={'timer_1'} position={position.timer_1} />
-          <BlockGroupDnD id={'timer_2'} position={position.timer_2} />
-          <BlockGroupDnD id={'timer_3'} position={position.timer_3} />
-          <BlockGroupDnD id={'timer_4'} position={position.timer_4} />
+      <DndContext onDragMove={handleDrag} onDragEnd={handleDragEnd}>
+        <DnDKitArea>
+          {Object.entries(timers).map(([key, timer]) => (
+            <TimerBlock
+              id={key}
+              position={timer.position}
+              parentChild={timer.parentChild}
+            />
+          ))}
         </DnDKitArea>
       </DndContext>
-
     </>
   );
-
 }
 
 export default App;
