@@ -9,4 +9,8 @@ export class Position {
     this.top = top;
     this.left = left;
   }
+
+  getPosition() : {top: number, left: number} {
+    return { top: this.top.getTop(), left: this.left.getLeft() };
+  }
 }

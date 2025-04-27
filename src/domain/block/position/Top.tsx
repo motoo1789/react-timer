@@ -12,5 +12,9 @@ export class Top {
         }
         this.top = top;
     }
+
+    getTop() {
+        return this.top;
+    }
   }
   

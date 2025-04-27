@@ -12,5 +12,9 @@ export class Left {
         }
         this.left = left;
     }
+    
+    getLeft() {
+        return this.left;
+    }
   }
   
