@@ -1,4 +1,6 @@
 import { useState, createContext, useEffect } from "react";
+import { useSyncExternalStore } from 'react';
+import { todosStore } from './application/TimerBlocksApplicationService';
 
 import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
@@ -25,6 +27,8 @@ export const TimeContext = createContext<TimeContextType>({
 type Timers = {
   [key: string]: Timer;
 };
+
+
 function App() {
   const initialTimers: Timers = {
     timer_1: {
@@ -337,8 +341,18 @@ function App() {
     console.log("timers", timers);
   }, [timers]);
 
+  // const tmp : TimerBlocksApplicationService = new TimerBlocksApplicationService();
+  const todos = useSyncExternalStore(todosStore.subscribe, todosStore.getSnapshot);
+
   return (
     <>
+      <button onClick={() => todosStore.addTodo()}>Add todo</button>
+      <hr />
+      <ul>
+        {todos.map(todo => (
+          <li key={todo.id}>{todo.text}</li>
+        ))}
+      </ul>
       <TimeContext.Provider value={{ totalSeconds, setTotalSeconds }}>
         <ShowTimer color={showTimerColor} />
         <TimeSelect setMinute={setMinute} setSecond={setSecond} />
