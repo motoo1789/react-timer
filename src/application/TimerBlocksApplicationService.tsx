@@ -1,7 +1,12 @@
 import { useState, createContext, useEffect } from "react";
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from "react";
+import { DragEndEvent, DragMoveEvent} from "@dnd-kit/core";
+
 // import { todosStore } from '../application/TimerBlocksApplicationService';
 import { Block } from "../domain/block/Block";
+import { BlockId } from "../domain/block/BlockId";
+import { BlockFactory } from "../domain/block/BlockFactory";
+
 
 const initialTimers = {
   timer_1: {
@@ -26,67 +31,50 @@ type Blocks = {
   [key: string]: Block;
 };
 
-let nextId = 0
-let todos = [{ id: 9, text: 'Todo #1' }];
-let  listeners: Array<() => void> = [];
+interface BlockService {
+  subscribe: (listener: () => void) => () => void;
+  getSnapshot: () => Blocks;
+  handler(event: DragEndEvent | DragMoveEvent): void;
+}
+
+let nextId = 0;
+let blocks: Blocks = {
+  timer_1: BlockFactory.createBlock("timer_1", 50, 50, "timer_1",0 )
+};
+let todos = [{ id: 9, text: "Todo #1" }];
+let listeners: Array<() => void> = [];
 // todos: [{ id: 0, text: 'Todo #1' }],
 // listeners: [] as Array<() => void>,
 
-export const todosStore = {
-  
-  addTodo() {
-    todos = [...todos, { id: nextId++, text: 'Todo #' + nextId }]
-    emitChange();
-  },
+export const DragBlock : BlockService = {
   subscribe(listener: () => void): () => void {
     listeners = [...listeners, listener];
     return () => {
       listeners = listeners.filter((l: () => void) => l !== listener);
-    };
+    }
   },
   getSnapshot() {
-    return todos;
+    return blocks;
+  },
+
+  handler(event: DragMoveEvent): void { 
+    console.log("drag drag");
+    const draggable: string = event.active?.id as string;
+
+    // グループがドラッグされた時
+    if (blocks[draggable].isParent()) {
+      console.log("group drag");
+      blocks[draggable].updatePosition(event.delta.y, event.delta.x);
+      // const newLeft: number = blocks[draggable].position.left + event.delta.x;
+
+      Object.entries(blocks).filter(([id, block]) => block.isDragGroup(draggable))
+                            .forEach(([id, block]) => {
+                              block.updatePosition(event.delta.y, event.delta.x);
+                            });
+      listeners.forEach((listener) => listener());
+    }
   }
-
-};
-
-function emitChange() {
-  console.log('emitChange');
-  listeners.forEach(listener => listener());
 }
 
-// export class TimerBlocksApplicationService {
-//   private nextId = 0;
-//   private todos = [{ id: this.nextId++, text: 'Todo #1' }];
-//   private listeners: Array<() => void> = [];
 
-//   constructor() {
-//     this.getSnapshot = this.getSnapshot.bind(this);
-//     this.subscribe = this.subscribe.bind(this);
-//     this.addTodo = this.addTodo.bind(this);
-//     this.emitChange = this.emitChange.bind(this);
-//   }
 
-//   addTodo() {
-//     console.log('addTodo');
-//     todos = [...todos, { id: this.nextId++, text: 'Todo #' + this.nextId }]
-//     this.emitChange();
-//   }
-//   subscribe(listener: () => void): () => void {
-//     listeners = [...listeners, listener];
-//     return () => {
-//       this.listeners = listeners.filter((l: () => void) => l !== listener);
-//     };
-//   }
-//   getSnapshot() {
-//     console.log('getSnapshot');
-    
-//     //console.log(this.todos);
-//     return todos;
-//   }
-
-//   emitChange() {
-//     console.log('emitChange');
-//     listeners.forEach(listener => listener());
-//   }
-// }

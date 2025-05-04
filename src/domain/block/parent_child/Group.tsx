@@ -6,11 +6,11 @@ export class Group {
   }
 
   /**
-   * ドラッグされた要素がグループの親か判定
+   * ドラッグされた要素ブロックのグループか判定
    * @param {string} draggable
    * @returns boolean
    */
-  public canGroupDrag = (draggable: string) => {
+  public isDragGroup = (draggable: string) => {
     return this.group === draggable || false;
   };
 

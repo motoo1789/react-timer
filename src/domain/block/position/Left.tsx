@@ -16,5 +16,14 @@ export class Left {
     getLeft() {
         return this.left;
     }
+
+    /**
+     * 値を更新する
+     * @param {number} left
+     * @returns {Left}
+     */
+    public update = (leftPosition: number) => {
+        return new Left(this.left + leftPosition);
+    }
   }
   

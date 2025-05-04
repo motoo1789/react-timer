@@ -16,5 +16,14 @@ export class Top {
     getTop() {
         return this.top;
     }
+
+    /**
+     * 値を更新する
+     * @param {number} left
+     * @returns {Left}
+     */
+    public update = (toptPosition: number) => {
+        return new Top(this.top + toptPosition);
+    }
   }
   
