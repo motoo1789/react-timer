@@ -10,18 +10,25 @@ export class Group {
    * @param {string} draggable
    * @returns boolean
    */
-  public isDragGroup = (draggable: string) => {
-    return this.group === draggable || false;
+  public isDragGroup = (handlerGruop: string) => {
+    return this.group === handlerGruop || false;
   };
 
   /**
-   * ドラッグされた要素がグループにあるか判定
-   * @param {string} draggable
-   * @returns boolean | string
+   * 新しいOrderを生成する(穴埋め)
+   * @returns void
    */
   public canRemoveTimerBlock = (draggable: string) => {
     return this.group !== draggable
-      ? new Group(this.group)
+      ? this.group
       : false;
   };
+
+  public getGroupValue(): string {
+    return this.group;
+  }
+
+  public getGroup(): Group {
+    return this;
+  }
 }

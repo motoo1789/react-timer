@@ -10,8 +10,8 @@ export class Position {
     this.left = left;
   }
 
-  getPosition() : {top: number, left: number} {
-    return { top: this.top.getTop(), left: this.left.getLeft() };
+  getPosition() : Position {
+    return this;
   }
 
 
@@ -19,11 +19,5 @@ export class Position {
     return new Position(this.top.update(deltaTop), this.left.update(deltaLeft));
   }
 
-  // updateTop(delta: number) {
-  //   this.top = this.top.update(delta);
-  // }
 
-  // updateLeft(delta: number) {
-  //   this.left = this.left.update(delta);
-  // }
 }

@@ -18,12 +18,17 @@ export class Top {
     }
 
     /**
-     * 値を更新する
+     * 値を更新する(dragなどの変化量を用いて)
      * @param {number} left
      * @returns {Left}
      */
     public update = (toptPosition: number) => {
         return new Top(this.top + toptPosition);
     }
+
+    /**
+     * 値を取得する
+     * @returns {number}
+     */
   }
   

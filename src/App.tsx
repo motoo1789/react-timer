@@ -1,6 +1,6 @@
 import { useState, createContext, useEffect } from "react";
 import { useSyncExternalStore } from 'react';
-import { todosStore } from './application/TimerBlocksApplicationService';
+//import { todosStore } from './application/TimerBlocksApplicationService';
 
 import "./App.css";
 import { TimerState } from "./components/molecules/TimerState";
@@ -159,6 +159,7 @@ function App() {
         return acc;
       }, {} as Timers);
   };
+
   /**
    * ドラッグハンドラ
    */
@@ -234,8 +235,8 @@ function App() {
 						position: {
 							left: prev[draggable].position.left + event.delta.x,
 							top:
-								HIGHT * prev[draggable].parentChild.order +
-								prev[draggable].position.top +
+								HIGHT * prev[draggable].parentChild.order + // 何段目か(親の座標をもっているので何段目かの計算が必要)
+								prev[draggable].position.top + // 現在の座標 + 変化量
 								event.delta.y,
 						},
 						parentChild: { id: draggable, order: 0 },
@@ -342,17 +343,10 @@ function App() {
   }, [timers]);
 
   // const tmp : TimerBlocksApplicationService = new TimerBlocksApplicationService();
-  const todos = useSyncExternalStore(todosStore.subscribe, todosStore.getSnapshot);
 
   return (
     <>
-      <button onClick={() => todosStore.addTodo()}>Add todo</button>
-      <hr />
-      <ul>
-        {todos.map(todo => (
-          <li key={todo.id}>{todo.text}</li>
-        ))}
-      </ul>
+
       <TimeContext.Provider value={{ totalSeconds, setTotalSeconds }}>
         <ShowTimer color={showTimerColor} />
         <TimeSelect setMinute={setMinute} setSecond={setSecond} />
