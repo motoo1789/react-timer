@@ -30,5 +30,8 @@ export class Top {
      * 値を取得する
      * @returns {number}
      */
+    getValue() {
+        return this.top;
+    }
   }
   

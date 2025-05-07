@@ -21,6 +21,10 @@ export class Block {
     return this.position.getPosition();
   }
 
+  getParentChild(): ParentChild {
+    return this.parentChild;
+  }
+
   getOrder(): Order {
     return this.parentChild.getOrder();
   }

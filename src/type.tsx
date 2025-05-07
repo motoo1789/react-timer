@@ -1,14 +1,14 @@
-export type ParentChild = {
+export type ParentChildUI = {
   id: string;
   order: number;
 };
 
-export type Position = {
+export type PositionUI = {
   top: number;
   left: number;
 };
 
-export type Timer = {
-  position: Position;
-  parentChild: ParentChild;
+export type TimerUI = {
+  position: PositionUI;
+  parentChild: ParentChildUI;
 };

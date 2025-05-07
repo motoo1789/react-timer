@@ -1,5 +1,6 @@
 import { Top } from "./Top";
 import { Left } from "./Left";
+import { PositionUI } from "../../../type";
 
 export class Position {
   private top: Top;
@@ -14,10 +15,14 @@ export class Position {
     return this;
   }
 
-
   update(deltaTop: number, deltaLeft: number) : Position{
     return new Position(this.top.update(deltaTop), this.left.update(deltaLeft));
   }
 
-
+  getUIUseJson(): PositionUI {
+    return {
+      top: this.top.getValue(),
+      left: this.left.getValue(),
+    };
+  }
 }

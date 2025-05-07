@@ -25,5 +25,13 @@ export class Left {
     public update = (leftPosition: number) => {
         return new Left(this.left + leftPosition);
     }
+
+    /**
+     * 値を取得する
+     * @returns {number}
+     */
+    getValue() {
+        return this.left;
+    }
   }
   

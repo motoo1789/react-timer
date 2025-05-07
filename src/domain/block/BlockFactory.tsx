@@ -37,4 +37,14 @@ export class BlockFactory {
       ParentChildFactoryFactory.createParentChild(block.getBlockId().getId(), 0)
     );
   }
+
+  static uiBlock(): Block {
+    const blockId = "uiBlock";
+    const top = 0;
+    const left = 0;
+    const group = blockId;
+    const order = 0;
+
+    return BlockFactory.createBlock(blockId, top, left, group, order);
+  }
 }

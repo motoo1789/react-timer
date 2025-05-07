@@ -1,5 +1,6 @@
 import { Group } from "./Group";
 import { Order } from "./Order";
+import { ParentChildUI } from "../../../type";
 
 export class ParentChild {
   private group: Group;
@@ -99,5 +100,12 @@ export class ParentChild {
    */
   grouping(maxOrder: Order): void {
     this.order = this.order.grouping(maxOrder);
+  }
+
+  getUIUseJson(): ParentChildUI {
+    return {
+      id: this.group.getGroupValue(),
+      order: this.order.getOrderValue(),
+    };
   }
 }

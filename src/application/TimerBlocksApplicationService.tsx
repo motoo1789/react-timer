@@ -8,6 +8,8 @@ import { BlockId } from "../domain/block/BlockId";
 import { BlockFactory } from "../domain/block/BlockFactory";
 import { Order } from "../domain/block/parent_child/Order";
 import { Group } from "../domain/block/parent_child/Group";
+import { UIJsonFactory } from "../domain/UI/UIJsonFactory";
+import { TimerUI } from "../type.tsx";
 
 const initialTimers = {
   timer_1: {
@@ -82,7 +84,12 @@ export const DragBlock: BlockService = {
     };
   },
   getSnapshot() {
-    return blocks;
+    let uiBlock: { [key: string]: TimerUI } = {};
+    // blocksを回してUI層で使えるblocksの形式に変換
+    Object.entries(blocks).forEach(([key, block]) => {
+      uiBlock[key] = UIJsonFactory(block);
+    });
+    return uiBlock;
   },
 
   handler(event: DragMoveEvent): void {
@@ -103,6 +110,7 @@ export const DragBlock: BlockService = {
         });
       listeners.forEach((listener) => listener());
     }
+    emitChange();
   },
 };
 
@@ -336,6 +344,7 @@ export const DropBlock: BlockService = {
       //   };
       // });
     }
+    emitChange();
   },
 };
 
@@ -370,3 +379,8 @@ const isDifferenceDroppableDraggable = (
 ) => {
   return droppable !== draggable;
 };
+
+function emitChange() {
+  console.log('emitChange');
+  listeners.forEach(listener => listener());
+}
