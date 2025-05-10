@@ -11,7 +11,7 @@ import { DndContext , DragEndEvent, DragMoveEvent} from "@dnd-kit/core";
 import { DnDKitArea } from "./components/molecules/DnDKitArea";
 import { TimerBlock } from "./components/molecules/blocks/TimerBlock";
 import { ParentChildUI, PositionUI, TimerUI } from "./type";
-
+import { CombinedStore } from './application/CombinedStore';
 import { DropBlock, DragBlock} from "./application/TimerBlocksApplicationService";
 
 // Define DragBlock with the correct signature
@@ -61,13 +61,8 @@ function App() {
   
   // const [timers, setTimer] = useState<Timers>(initialTimers);
   const HIGHT = 50;
-  const timers = useSyncExternalStore(
-    (onStoreChange) => {
-      // Subscribe to store changes
-      // Return an unsubscribe function
-      return () => {
-        // Unsubscribe from store changes
-      };
+  // const timers = useSyncExternalStore(DropBlock.subscribe, DropBlock.getSnapshot);
+    const timers = useSyncExternalStore(CombinedStore.subscribe, CombinedStore.getSnapshot);
 
   const addBlock = () => {
     // setBlocks([...blocks, <InteractBlock key={blocks.length} />]);
@@ -373,7 +368,7 @@ function App() {
 
       <DndContext onDragMove={DragBlock.handler} onDragEnd={DropBlock.handler}>
         <DnDKitArea>
-          {Object.entries(timers).map(([key, timer]) => (
+          {timers && Object.entries(timers).map(([key, timer]) => (
             <TimerBlock
               id={key}
               position={timer.position}

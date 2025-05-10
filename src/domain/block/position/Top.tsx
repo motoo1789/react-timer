@@ -18,12 +18,23 @@ export class Top {
     }
 
     /**
-     * 値を更新する(dragなどの変化量を用いて)
+     * 値を更新する(dragなどの変化量を用いて) drop
      * @param {number} left
      * @returns {Left}
      */
-    public update = (toptPosition: number) => {
+    update = (toptPosition: number) => {
+        console.log("Top > update > ",toptPosition)
         return new Top(this.top + toptPosition);
+    }
+
+    /**
+     * 値を更新する drag
+     * @param {number} dragPosition
+     * @returns {Left}
+     */
+    drag = (dragPosition: number) => {
+        console.log("Top > update > ", dragPosition)
+        return new Top(dragPosition);
     }
 
     /**

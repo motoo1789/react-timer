@@ -19,11 +19,21 @@ export class Left {
 
     /**
      * 値を更新する
-     * @param {number} left
+     * @param {number} leftPosition
      * @returns {Left}
      */
     public update = (leftPosition: number) => {
         return new Left(this.left + leftPosition);
+    }
+
+    /**
+     * 値を更新する drag
+     * @param {number} dragPosition
+     * @returns {Left}
+     */
+    drag = (dragPosition: number) => {
+        console.log("Top > update > ", dragPosition)
+        return new Left(dragPosition);
     }
 
     /**

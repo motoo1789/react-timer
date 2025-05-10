@@ -12,3 +12,7 @@ export type TimerUI = {
   position: PositionUI;
   parentChild: ParentChildUI;
 };
+
+export type Timers = {
+  [key: string]: TimerUI;
+}

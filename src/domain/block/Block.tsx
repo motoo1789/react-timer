@@ -32,6 +32,14 @@ export class Block {
   getGroup(): Group {
     return this.parentChild.getGroup();
   }
+
+  getLeftValue(): number {
+    return this.position.getLeftValue();
+  }
+
+  getTopValue(): number {
+    return this.position.getTopValue();
+  }
   // getGroupValue(): Group {
   //   return this.parentChild.getGroupValue();
   // }
@@ -66,6 +74,10 @@ export class Block {
    */
   setPosition(newPosition: Position): void {
     this.position = newPosition;
+  }
+
+  setNewGroupToDraggable(newGroup: string) : void {
+    this.parentChild.setNewGroupToDraggable(newGroup);
   }
 
   isParent(): boolean {
@@ -119,5 +131,14 @@ export class Block {
    */
   grouping(maxOrder: Order): void {
     this.parentChild.grouping(maxOrder);
+  }
+
+  /**
+   * ドラッグ時の子ブロックの座標を更新
+   * @param {number} deltaTop
+   * @param {number} deltaLeft
+   */
+  drag(deltaTop: number, deltaLeft: number): void {
+    this.position.drag(deltaTop, deltaLeft);
   }
 }

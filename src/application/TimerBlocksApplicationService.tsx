@@ -9,7 +9,7 @@ import { BlockFactory } from "../domain/block/BlockFactory";
 import { Order } from "../domain/block/parent_child/Order";
 import { Group } from "../domain/block/parent_child/Group";
 import { UIJsonFactory } from "../domain/UI/UIJsonFactory";
-import { TimerUI } from "../type.tsx";
+import { Timers } from "../type.tsx";
 
 const initialTimers = {
   timer_1: {
@@ -36,15 +36,16 @@ type Blocks = {
 
 interface BlockService {
   subscribe: (listener: () => void) => () => void;
-  getSnapshot: () => Blocks;
+  getSnapshot: () => Timers;
   handler(event: DragEndEvent | DragMoveEvent): void;
 }
 
-let nextId = 0;
-let blocks: Blocks = {
+
+const blocks: Blocks = {
   timer_1: BlockFactory.createBlock("timer_1", 50, 50, "timer_1", 0),
-};
-let todos = [{ id: 9, text: "Todo #1" }];
+  timer_2: BlockFactory.createBlock("timer_2", 150, 150, "timer_2", 0),
+  timer_3: BlockFactory.createBlock("timer_3", 150,150, "timer_2", 1),};
+
 let listeners: Array<() => void> = [];
 const DROP_AREA = "DROP_AREA";
 // todos: [{ id: 0, text: 'Todo #1' }],
@@ -84,7 +85,8 @@ export const DragBlock: BlockService = {
     };
   },
   getSnapshot() {
-    let uiBlock: { [key: string]: TimerUI } = {};
+    // console.log("DragBlock getSnapshot")
+    const uiBlock = {} as Timers;
     // blocksを回してUI層で使えるblocksの形式に変換
     Object.entries(blocks).forEach(([key, block]) => {
       uiBlock[key] = UIJsonFactory(block);
@@ -95,22 +97,31 @@ export const DragBlock: BlockService = {
   handler(event: DragMoveEvent): void {
     console.log("drag drag");
     const draggable: string = event.active?.id as string;
+    const draggableTop: number = blocks[draggable].getTopValue();
+    const draggableLeft: number = blocks[draggable].getLeftValue();
+    console.log("draggableTop", draggableTop);
+    console.log("event.delta.y", event.delta.y);
+
 
     // グループがドラッグされた時
     if (blocks[draggable].isParent()) {
       console.log("group drag");
-      blocks[draggable].updatePosition(event.delta.y, event.delta.x);
+      // blocks[draggable].updatePosition(event.delta.y, event.delta.x);
       // const newLeft: number = blocks[draggable].position.left + event.delta.x;
 
       Object.entries(blocks)
         .filter(([id, block]) => block.isDragGroup(draggable))
-        .filter(([id, block]) => block.isParent())
+        .filter(([id, block]) => !block.isParent())
         .forEach(([id, block]) => {
-          block.updatePosition(event.delta.y, event.delta.x);
+          // const childTop = block.getTopValue();
+          // console.log("childTop", childTop);
+          // const childLeft = block.getLeftValue();
+          block.drag(draggableTop + event.delta.y, draggableLeft + event.delta.x);
         });
       listeners.forEach((listener) => listener());
+
+      emitChange();
     }
-    emitChange();
   },
 };
 
@@ -122,7 +133,13 @@ export const DropBlock: BlockService = {
     };
   },
   getSnapshot() {
-    return blocks;
+    // console.log("DropBlock getSnapshot")
+    const uiBlock = {} as Timers;
+    // blocksを回してUI層で使えるblocksの形式に変換
+    Object.entries(blocks).forEach(([key, block]) => {
+      uiBlock[key] = UIJsonFactory(block);
+    });
+    return uiBlock;
   },
 
   handler(event: DragEndEvent): void {
@@ -133,12 +150,13 @@ export const DropBlock: BlockService = {
       blocks[draggable].isParent() &&
       (droppable === DROP_AREA || draggable === droppable)
     ) {
-      console.log("group drag");
-      Object.entries(blocks)
-        .filter(([id, block]) => block.isDragGroup(draggable))
-        .forEach(([id, block]) => {
-          block.updatePosition(event.delta.y, event.delta.x);
-        });
+      console.log("group drop");
+      blocks[draggable].updatePosition(event.delta.y, event.delta.x);
+      // Object.entries(blocks)
+      //   .filter(([id, block]) => block.isDragGroup(draggable))
+      //   .forEach(([id, block]) => {
+      //     block.updatePosition(event.delta.y, event.delta.x);
+      //   });
       listeners.forEach((listener) => listener());
       // setTimer((prev: Timers) => {
       //   const positions: Timers = updatePosition(event, draggable);
@@ -202,8 +220,8 @@ export const DropBlock: BlockService = {
         // 親が子要素のグループになる判定がなぜか怒るがそれは良くない
         // グループのドラッグ移動自体はしたいのでsetTimerして他の処理はしない
         console.log("親は子供の親にならない");
-        blocks[draggable].setPosition(blocks[droppable].getPosition());
-
+        blocks[draggable].updatePosition(event.delta.y, event.delta.x);
+        emitChange();
         // setTimer((prev: Timers) => ({
         //   ...prev,
         //   [draggable]: {
@@ -255,6 +273,7 @@ export const DropBlock: BlockService = {
       //   block.setPosition(blocks[droppable].getPosition());
       // });
       droppableNewGroup.forEach(([id, block]: [string, Block]) => {
+        block.setNewGroupToDraggable(droppable);
         block.groupingSortOrder(maxOrder);
         block.setPosition(blocks[droppable].getPosition());
       });
