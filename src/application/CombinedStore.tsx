@@ -32,7 +32,7 @@ export const CombinedStore = {
 
     const newSnapshot = {
       ...dropSnapshot,
-      ...dragSnapshot,
+      // ...dragSnapshot,
     };
 
     // キャッシュされたスナップショットと比較

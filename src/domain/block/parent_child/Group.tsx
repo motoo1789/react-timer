@@ -24,6 +24,9 @@ export class Group {
       : false;
   };
 
+  public grouping = (parent: Group): Group => {
+    return new Group(parent.getGroupValue());
+  }
   public getGroupValue(): string {
     return this.group;
   }

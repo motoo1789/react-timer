@@ -32,7 +32,7 @@ export class Left {
      * @returns {Left}
      */
     drag = (dragPosition: number) => {
-        console.log("Top > update > ", dragPosition)
+        console.log("left > update > ", dragPosition)
         return new Left(dragPosition);
     }
 

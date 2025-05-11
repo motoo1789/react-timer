@@ -5,7 +5,7 @@ export class BlockId {
       this.id = id;
     }
   
-    getId(): string {
+    public getId(): string {
       return this.id;
     }
   }

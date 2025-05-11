@@ -129,9 +129,10 @@ export class Block {
    * @param {Order} maxOrder
    * @returns boolean | string
    */
-  grouping(maxOrder: Order): void {
-    this.parentChild.grouping(maxOrder);
+  grouping(maxOrder: Order, parent: Group): void {
+    this.parentChild.grouping(maxOrder, parent);
   }
+
 
   /**
    * ドラッグ時の子ブロックの座標を更新

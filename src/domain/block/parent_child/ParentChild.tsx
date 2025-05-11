@@ -98,8 +98,9 @@ export class ParentChild {
    * @param {Order} maxOrder
    * @returns boolean | string
    */
-  grouping(maxOrder: Order): void {
+  grouping(maxOrder: Order, parent: Group): void {
     this.order = this.order.grouping(maxOrder);
+    this.group = this.group.grouping(parent);
   }
 
   getUIUseJson(): ParentChildUI {
@@ -107,5 +108,9 @@ export class ParentChild {
       id: this.group.getGroupValue(),
       order: this.order.getOrderValue(),
     };
+  }
+
+  setNewGroupToDraggable(newGroup: string): void {
+    this.group = this.group.setNewGroupToDraggable(newGroup);
   }
 }

@@ -346,7 +346,7 @@ function App() {
 
   // postionやgroupingの変更を監視
   useEffect(() => {
-    console.log("timers", timers);
+    // console.log("timers", timers);
   }, [timers]);
 
   // const tmp : TimerBlocksApplicationService = new TimerBlocksApplicationService();
