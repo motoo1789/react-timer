@@ -15,6 +15,12 @@ export class Position {
     return this;
   }
 
+  /**
+   * 新しいTopとLeftを生成する
+   * @param {number} top
+   * @param {number} left
+   * @returns Position
+   */
   update(deltaTop: number, deltaLeft: number) : Position{
     return new Position(this.top.update(deltaTop), this.left.update(deltaLeft));
   }
@@ -28,6 +34,10 @@ export class Position {
     this.left = this.left.drag(dragLeft);
   }
 
+  /**
+   * UI層に渡すための値を取得
+   * @returns {ParentChildUI}
+   */
   getUIUseJson(): PositionUI {
     return {
       top: this.top.getValue(),

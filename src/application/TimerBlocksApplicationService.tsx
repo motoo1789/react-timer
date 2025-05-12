@@ -1,8 +1,5 @@
-import { useState, createContext, useEffect } from "react";
-import { useSyncExternalStore } from "react";
 import { DragEndEvent, DragMoveEvent } from "@dnd-kit/core";
 
-// import { todosStore } from '../application/TimerBlocksApplicationService';
 import { Block } from "../domain/block/Block";
 import { BlockId } from "../domain/block/BlockId";
 import { BlockFactory } from "../domain/block/BlockFactory";
@@ -44,12 +41,12 @@ interface BlockService {
 const blocks: Blocks = {
   timer_1: BlockFactory.createBlock("timer_1", 50, 50, "timer_1", 0),
   timer_2: BlockFactory.createBlock("timer_2", 150, 150, "timer_2", 0),
-  timer_3: BlockFactory.createBlock("timer_3", 150,150, "timer_2", 1),};
-
+  timer_3: BlockFactory.createBlock("timer_3", 150,150, "timer_2", 1),
+  timer_4: BlockFactory.createBlock("timer_4", 250,250, "timer_4", 0),
+  timer_5: BlockFactory.createBlock("timer_5", 250,250, "timer_4", 1),
+};
 let listeners: Array<() => void> = [];
 const DROP_AREA = "DROP_AREA";
-// todos: [{ id: 0, text: 'Todo #1' }],
-// listeners: [] as Array<() => void>,
 
 const orderRemoveGroup = (remove: Block, rest: Blocks, groupId: string) => {
   const draggableOrder: Order = remove.getOrder();
@@ -64,14 +61,6 @@ const orderRemoveGroup = (remove: Block, rest: Blocks, groupId: string) => {
       // TODO：最後に材料揃えてFactoryになげてもいいかも
       .reduce((acc: BlockId[], [id, block]: [string, Block]) => {
         acc.push(block.getBlockId());
-        // acc[id] = {
-        // 穴埋め後のorderを生成してセットしてあげればいいのか
-        // ...block,
-        // parentChild: {
-        //   ...block.parentChild,
-        //   order: block.parentChild.order - 1,
-        // },
-        // };
         return acc;
       }, [] as BlockId[])
   );
@@ -85,7 +74,6 @@ export const DragBlock: BlockService = {
     };
   },
   getSnapshot() {
-    // console.log("DragBlock getSnapshot")
     const uiBlock = {} as Timers;
     // blocksを回してUI層で使えるblocksの形式に変換
     Object.entries(blocks).forEach(([key, block]) => {
@@ -99,9 +87,6 @@ export const DragBlock: BlockService = {
     const draggable: string = event.active?.id as string;
     const draggableTop: number = blocks[draggable].getTopValue();
     const draggableLeft: number = blocks[draggable].getLeftValue();
-    console.log("draggableTop", draggableTop);
-    console.log("event.delta.y", event.delta.y);
-
 
     // グループがドラッグされた時
     if (blocks[draggable].isParent()) {
@@ -111,16 +96,11 @@ export const DragBlock: BlockService = {
         .filter(([id, block]) => block.isDragGroup(draggable))
         .filter(([id, block]) => !block.isParent())
         .forEach(([id, block]) => {
-          console.log("*******************************");
-          console.log("blockid > ", block.getBlockId().getId());
           block.drag(draggableTop + event.delta.y, draggableLeft + event.delta.x);
         });
-      // listeners.forEach((listener) => listener());
 
       emitChange();
     }
-    console.log(blocks[draggable].getLeftValue());
-    console.log(blocks[draggable].getTopValue());
   },
 };
 
@@ -132,7 +112,6 @@ export const DropBlock: BlockService = {
     };
   },
   getSnapshot() {
-    // console.log("DropBlock getSnapshot")
     const uiBlock = {} as Timers;
     // blocksを回してUI層で使えるblocksの形式に変換
     Object.entries(blocks).forEach(([key, block]) => {
@@ -152,15 +131,12 @@ export const DropBlock: BlockService = {
     ) {
       console.log("group drop");
       blocks[draggable].updatePosition(event.delta.y, event.delta.x);
-      // listeners.forEach((listener) => listener());
     } else if (canDropToDropArea(droppable)) {
       /* ブロック単体のエリア移動 */
       console.log("block drop to drop area");
 
       // グループの中にあるブロックが移動されたらグループから削除
       const groupId = blocks[draggable].canRemoveTimerBlock(draggable);
-
-      // setTimer((prev: Timers) => {
       const { [draggable]: remove, ...rest } = blocks;
       // 抜けたTimerの穴埋め処理
       const orderedFillBlockIds: BlockId[] = groupId
@@ -168,7 +144,6 @@ export const DropBlock: BlockService = {
         : [];
 
       // 繰り返しで回すためにdraggableのidもいれとく
-      // orderedRemoveBlockIds.push(blocks[draggable].getBlockId());
       orderedFillBlockIds.forEach((fillBlock) => {
         blocks[fillBlock.getId()].updateFillBlock();
       });
@@ -196,7 +171,6 @@ export const DropBlock: BlockService = {
         return;
       }
 
-      console.log("grouping");
       // グループ済みのブロックが同じグループに入らないようにするためのバリデーション
       if (blocks[draggable].isDragGroup(droppable)) {
         console.log("グループ済みのブロックは同じグループになれない");
@@ -214,23 +188,34 @@ export const DropBlock: BlockService = {
             block.isOverOrder(maxOrder) ? block.getOrder() : maxOrder,
           new Order(0) // 初期値を安全に設定
         );
-      console.log("grouping");
 
-      // draggableに子供がいる場合の処理
-      // driooabke orderをMaxOrderから+1してあげる対象ブロック
-      
+      /**
+       * グループの中にあるブロックが移動されたらグループから削除して穴埋め
+       */
+      const groupId = blocks[draggable].canRemoveTimerBlock(draggable);
+      const { [draggable]: remove, ...rest } = blocks;
+      // 穴埋めでずらす抜けたTimer以降のblockを取得
+      const orderedFillBlockIds: BlockId[] = groupId ? orderRemoveGroup(remove, rest, groupId) : [];
+      orderedFillBlockIds.forEach((fillBlock) => {
+        console.log("orderedFillBlockIds");
+        blocks[fillBlock.getId()].updateFillBlock();
+      });
+
+
+      /**
+       * draggableに子供がいる場合の処理
+       * driooabke orderをMaxOrderから+1してあげる対象ブロック
+       */
       const droppableNewGroup :Array<[string, Block]> = Object.entries(blocks)
-      .filter(([id, block]: [string, Block]) => block.isDragGroup(draggable))
+                                                              .filter(([id, block]: [string, Block]) => block.isDragGroup(draggable))
 
       droppableNewGroup.forEach(([id, block]: [string, Block]) => {
-        // block.setNewGroupToDraggable(droppable);
-        // block.groupingSortOrder(maxOrder);
-        block.grouping(maxOrder, parentId);
+        console.log("groupming start");
+        console.log("blockid > ", block.getBlockId().getId());
+        block.groupingSortOrder(maxOrder, parentId); // TODO:grouping時のorder処理をメソッド一つにしたい
         const top = blocks[droppable].getTopValue();
         const left = blocks[droppable].getLeftValue();
-        // block.updatePosition(top, left);
         block.drag(top, left);
-        // block.setPosition(blocks[droppable].getPosition());
       });
       // ドラッググループの子ブロックのorderの変更
 
@@ -240,29 +225,15 @@ export const DropBlock: BlockService = {
       // droppableNewGroupにdraggableの要素が入らないここで入れる
       // returnのところで直接書いてもいいけど2重の更新になる
       if (droppableNewGroup.length === 0) {
+        console.log("groupping group → group ブロック単体");
         const top = blocks[droppable].getTopValue();
         const left = blocks[droppable].getLeftValue();
-
         blocks[draggable].drag(top, left);
-        // blocks[draggable].setPosition(blocks[droppable].getPosition());
-        blocks[draggable].grouping(maxOrder, parentId); // todo:ここおかしいかも
+        blocks[draggable].grouping(maxOrder, parentId); // TODO:grouping時のorder処理をメソッド一つにしたい
       }
-      // グループの中にあるブロックが移動されたらグループから削除
-      const groupId = blocks[draggable].canRemoveTimerBlock(draggable);
-
-      const { [draggable]: remove, ...rest } = blocks;
-      // 抜けたTimerの穴埋め処理
-      const orderedFillBlockIds: BlockId[] = groupId
-        ? orderRemoveGroup(remove, rest, groupId)
-        : [];
-
-      // 繰り返しで回すためにdraggableのidもいれとく
-      // orderedRemoveBlockIds.push(blocks[draggable].getBlockId());
-      orderedFillBlockIds.forEach((fillBlock) => {
-        blocks[fillBlock.getId()].updateFillBlock();
-      });
     }
     emitChange();
+    
   },
 };
 

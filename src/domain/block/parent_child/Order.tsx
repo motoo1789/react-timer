@@ -62,6 +62,9 @@ export class Order {
    * @returns boolean | string
    */
   groupingSortOrder(maxOrder: Order) : Order {
+    console.log("groupingSortOrder");
+    console.log(maxOrder.getOrderValue());
+    //if(maxOrder.getOrderValue() === 0) {
     return new Order(this.order + maxOrder.getOrderValue() + 1);
   }
 
@@ -71,6 +74,7 @@ export class Order {
    * @returns boolean | string
    */
   grouping(maxOrder: Order) : Order {
+    console.log("grouping");
     return new Order(maxOrder.getOrderValue() + 1);
   }
 }

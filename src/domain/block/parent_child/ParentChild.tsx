@@ -89,8 +89,9 @@ export class ParentChild {
    * @param {Order} maxOrder
    * @returns boolean | string
    */
-  groupingSortOrder(maxOrder: Order): void {
+  groupingSortOrder(maxOrder: Order, parent: Group): void {
     this.order = this.order.groupingSortOrder(maxOrder);
+    this.group = this.group.grouping(parent);
   }
 
   /**
@@ -99,10 +100,16 @@ export class ParentChild {
    * @returns boolean | string
    */
   grouping(maxOrder: Order, parent: Group): void {
+    console.log("grouping");
+    //this.order = this.order.groupingSortOrder(maxOrder);
     this.order = this.order.grouping(maxOrder);
     this.group = this.group.grouping(parent);
   }
 
+  /**
+   * UI層に渡すための値を取得
+   * @returns {ParentChildUI}
+   */
   getUIUseJson(): ParentChildUI {
     return {
       id: this.group.getGroupValue(),
@@ -110,7 +117,4 @@ export class ParentChild {
     };
   }
 
-  setNewGroupToDraggable(newGroup: string): void {
-    this.group = this.group.setNewGroupToDraggable(newGroup);
-  }
 }

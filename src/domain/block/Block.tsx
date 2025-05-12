@@ -13,6 +13,10 @@ export class Block {
     this.position = position;
     this.parentChild = ParentChild;
   }
+
+  /**
+   * getter
+   */
   getBlockId(): BlockId {
     return this.id;
   }
@@ -76,14 +80,21 @@ export class Block {
     this.position = newPosition;
   }
 
-  setNewGroupToDraggable(newGroup: string) : void {
-    this.parentChild.setNewGroupToDraggable(newGroup);
-  }
-
+  /**
+   * ドラッグされた要素がグループの親か判定
+   * @param {string} draggable
+   * @returns boolean
+   */
   isParent(): boolean {
     return this.parentChild.isParent();
   }
 
+  /**
+   * ドラッグされた要素のブロックを判定
+   * paewnrはドロップの時に座標を更新するため弾く
+   * @param {string} draggable
+   * @returns boolean
+   */
   isDragGroup(group: string): boolean {
     return this.parentChild.isDragGroup(group);
   }
@@ -112,6 +123,7 @@ export class Block {
    * @returns boolean | string
    */
   public canRemoveTimerBlock = (draggable: string) => {
+    console.log("canRemoveTimerBlock", draggable);
     return this.parentChild.canRemoveTimerBlock(draggable);
   };
 
@@ -120,8 +132,8 @@ export class Block {
    * @param {Order} maxOrder
    * @returns boolean | string
    */
-  groupingSortOrder(maxOrder: Order): void {
-    this.parentChild.groupingSortOrder(maxOrder);
+  groupingSortOrder(maxOrder: Order, parent: Group): void {
+    this.parentChild.groupingSortOrder(maxOrder, parent);
   }
 
   /**
